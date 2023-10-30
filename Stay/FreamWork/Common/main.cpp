@@ -8,6 +8,7 @@ namespace stay
 	extern IApplication* g_pApp;
 }
 
+
 int main(int argc, char** argv)
 {
 	if (stay::g_pApp->initialize() != 0)
