@@ -29,8 +29,8 @@ namespace stay
 
 	private:
 		static LRESULT WinProcBegin(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
-
-
+		static LRESULT WinProcHandle(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
+		LRESULT WinProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
 
 	private:
 		static WindowRegister windowClass;

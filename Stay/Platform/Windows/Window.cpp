@@ -61,7 +61,9 @@ namespace stay
 			100, 100,
 			x, y,
 			nullptr,
-			nullptr, nullptr, nullptr
+			nullptr, 
+			GetModuleHandle(LPCWSTR()),
+			reinterpret_cast<LPVOID>(this)
 		);
 
 		if (hWnd != nullptr)
@@ -82,6 +84,30 @@ namespace stay
 
 	LRESULT Window::WinProcBegin(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 	{
+		CREATESTRUCT *pCreate;
+		Window* pWindow;
+		switch (Msg)
+		{
+		case WM_CREATE:
+		case WM_NCCREATE:
+			pCreate = reinterpret_cast<CREATESTRUCT*>(lParam);
+			pWindow = reinterpret_cast<Window*>(pCreate->lpCreateParams);
+			SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(pWindow));
+			SetWindowLongPtr(hWnd, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(WinProcHandle));
+		default:
+			break;
+		}
+		return DefWindowProc(hWnd, Msg, wParam, lParam);
+	}
+	LRESULT Window::WinProcHandle(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
+	{
+		auto pWindow = reinterpret_cast<Window*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
+
+		return pWindow->WinProc(hWnd, Msg, wParam, lParam);
+	}
+	LRESULT Window::WinProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
+	{
+		OutputDebugString(L"Window");
 		return DefWindowProc(hWnd, Msg, wParam, lParam);
 	}
 }
