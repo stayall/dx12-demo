@@ -1,5 +1,7 @@
-#include "WinError.h"
 #include <sstream>
+
+#include "WinError.h"
+#include "WinHelper.h"
 
 namespace stay
 {
@@ -70,13 +72,13 @@ namespace stay
 	std::string WindowException::TranslateError(HRESULT hr)
 	{
 		const DWORD wSize = 128;
-		WCHAR* strError = L"";
+		CHAR* strError = "";
 
-		DWORD size = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_ALLOCATE_BUFFER,
+		DWORD size = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_ALLOCATE_BUFFER,
 			nullptr,
 			hr,
 			MAKELANGID(LANG_USER_DEFAULT, LANG_SYSTEM_DEFAULT),
-			(LPTSTR)&strError,
+			(LPSTR)&strError,
 			0,
 			nullptr);
 		if (size == 0)
@@ -87,18 +89,8 @@ namespace stay
 			return strBuffer;
 		}
 
-		int iSize;
-		char* pszMultiByte;
-
-		iSize = WideCharToMultiByte(CP_ACP, 0, strError, -1, NULL, 0, NULL, NULL);
-		pszMultiByte = new char[iSize];
-		WideCharToMultiByte(CP_ACP, 0, strError, -1, pszMultiByte, iSize, NULL, NULL);
-
-		std::string errorInfo(pszMultiByte);
-		delete[] pszMultiByte;
-
-		LocalFree(strError);
-		return errorInfo;
+		return std::string(strError);
+		
 	}
 
 	WindowException::WindowException(const char* filePath, int line, HRESULT hr)
