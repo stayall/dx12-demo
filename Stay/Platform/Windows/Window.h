@@ -1,6 +1,8 @@
 #ifndef _STAY_WINDOW_H_
 #define _STAY_WINDOW_H_
 
+#include <optional>
+
 #include "WinStd.h"
 
 namespace stay

@@ -43,6 +43,9 @@ namespace stay
 			ErrorTraceW(__FILEW__, __LINE__, L#x, true);\
 		}
 #endif // !hr
+
+
+
 #else
 #ifndef HR
 #define HR(x) x
@@ -52,7 +55,15 @@ namespace stay
 
 #endif // 
 
-
 }
+
+#define THROW_LASTEXCEPTION() \
+	throw WindowException(__FILE__, __LINE__, GetLastError())
+#define CHWON_EXCEPTION(hr) WindowException(__FILE__, __LINE__, hr)
+#define THROW_IF_FAILED(hr) \
+	do {if (FAILED(hr)) \
+	{\
+		throw CHWON_EXCEPTION(hr);\
+	}}while(0)
 
 #endif // !_STAY_WINDOWS_ERROR_H_

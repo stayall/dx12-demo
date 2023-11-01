@@ -28,7 +28,7 @@ int WINAPI WinMain(HINSTANCE , HINSTANCE, LPSTR, int)
 	try
 	{
 
-		throw stay::WindowException("жпнд", __LINE__, 20);
+		throw stay::WindowException(__FILE__, __LINE__, 20);
 	}
 	catch (const stay::Exception &e)
 	{

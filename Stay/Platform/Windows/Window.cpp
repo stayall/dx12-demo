@@ -1,4 +1,5 @@
 #include "Window.h"
+#include "WinError.h"
 #include "Resource/resource1.h"
 
 namespace stay
@@ -11,6 +12,10 @@ namespace stay
 	{
 		windowClassName = className;
 		hInstance = GetModuleHandle(LPCWSTR());
+		if (hInstance == nullptr)
+		{
+			THROW_LASTEXCEPTION();
+		}
 
 		WNDCLASSEX wcx = {};
 		wcx.cbSize = sizeof(WNDCLASSEX);
@@ -31,7 +36,10 @@ namespace stay
 			GetSystemMetrics(SM_CYSMICON),
 			LR_DEFAULTCOLOR);
 
-		RegisterClassEx(&wcx);
+		if (RegisterClassEx(&wcx) == 0)
+		{
+			THROW_LASTEXCEPTION();
+		}
 
 	}
 
@@ -61,15 +69,17 @@ namespace stay
 			100, 100,
 			x, y,
 			nullptr,
-			nullptr, 
+			nullptr,
 			GetModuleHandle(LPCWSTR()),
 			reinterpret_cast<LPVOID>(this)
 		);
 
-		if (hWnd != nullptr)
+		if (hWnd == nullptr)
 		{
-			ShowWindow(hWnd, SW_SHOW);
+			THROW_LASTEXCEPTION();
 		}
+
+		ShowWindow(hWnd, SW_SHOW);
 	}
 
 	Window::~Window()
@@ -82,9 +92,10 @@ namespace stay
 		return hWnd;
 	}
 
+
 	LRESULT Window::WinProcBegin(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 	{
-		CREATESTRUCT *pCreate;
+		CREATESTRUCT* pCreate;
 		Window* pWindow;
 		switch (Msg)
 		{
@@ -105,9 +116,23 @@ namespace stay
 
 		return pWindow->WinProc(hWnd, Msg, wParam, lParam);
 	}
+
 	LRESULT Window::WinProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 	{
-		OutputDebugString(L"Window");
+		switch (Msg)
+		{
+		case WM_CLOSE:
+			if (MessageBox(hWnd, L"Really quit?", L"My application", MB_OKCANCEL) == IDOK)
+			{
+				PostQuitMessage(0);
+			}
+		case WM_DESTROY:
+			PostQuitMessage(0);
+			break;
+		
+		default:
+			break;
+		}
 		return DefWindowProc(hWnd, Msg, wParam, lParam);
 	}
 }
