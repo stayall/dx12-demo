@@ -70,7 +70,7 @@ namespace stay
 	std::string WindowException::TranslateError(HRESULT hr)
 	{
 		const DWORD wSize = 128;
-		WCHAR* strError = nullptr;
+		WCHAR* strError = L"";
 
 		DWORD size = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_ALLOCATE_BUFFER,
 			nullptr,
@@ -87,7 +87,16 @@ namespace stay
 			return strBuffer;
 		}
 
-		std::string errorInfo(strError);
+		int iSize;
+		char* pszMultiByte;
+
+		iSize = WideCharToMultiByte(CP_ACP, 0, strError, -1, NULL, 0, NULL, NULL);
+		pszMultiByte = new char[iSize];
+		WideCharToMultiByte(CP_ACP, 0, strError, -1, pszMultiByte, iSize, NULL, NULL);
+
+		std::string errorInfo(pszMultiByte);
+		delete[] pszMultiByte;
+
 		LocalFree(strError);
 		return errorInfo;
 	}
