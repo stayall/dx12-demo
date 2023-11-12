@@ -58,10 +58,10 @@ namespace stay
 }
 
 #define THROW_LASTEXCEPTION() \
-	throw WindowException(__FILE__, __LINE__, GetLastError())
-#define CHWON_EXCEPTION(hr) WindowException(__FILE__, __LINE__, hr)
+	throw stay::WindowException(__FILE__, __LINE__, GetLastError())
+#define CHWON_EXCEPTION(hr) stay::WindowException(__FILE__, __LINE__, hr)
 #define THROW_IF_FAILED(hr) \
-	do {if (FAILED(hr)) \
+	do {if (hr != S_OK) \
 	{\
 		throw CHWON_EXCEPTION(hr);\
 	}}while(0)

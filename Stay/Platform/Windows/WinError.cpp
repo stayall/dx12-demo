@@ -116,8 +116,8 @@ namespace stay
 	const std::string WindowException::getOriginString() const noexcept
 	{
 		std::stringstream ss;
-		ss << Exception::getOriginString()
-			<< "ErrorCode: " << getErrorId() << std::endl
+		ss << Exception::getOriginString() <<  std::hex
+			<< "ErrorCode: 0x" << getErrorId() << std::endl
 			<< "ErrorInfo: " << getErrorInfo() << std::endl;
 
 		return ss.str();
