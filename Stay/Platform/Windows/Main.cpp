@@ -10,6 +10,7 @@
 #include <wrl.h>
 #include <dxgi.h>
 #include <dxgi1_4.h>
+#include <dxgi1_6.h>
 #include <d3dcompiler.h>
 
 namespace dx = DirectX;
@@ -17,9 +18,76 @@ namespace dx = DirectX;
 struct VertexData
 {
 	dx::XMFLOAT3 position;
-	dx::XMFLOAT3 color;
+	dx::XMFLOAT4 color;
 };
 
+
+void GetHardwareAdapter(
+	IDXGIFactory1* pFactory,
+	IDXGIAdapter1** ppAdapter,
+	bool requestHighPerformanceAdapter)
+{
+	using Microsoft::WRL::ComPtr;
+	*ppAdapter = nullptr;
+
+	ComPtr<IDXGIAdapter1> adapter;
+
+	ComPtr<IDXGIFactory6> factory6;
+	//FIXED: use gpu 
+	if (SUCCEEDED(pFactory->QueryInterface(IID_PPV_ARGS(&factory6))))
+	{
+		for (
+			UINT adapterIndex = 0;
+			SUCCEEDED(factory6->EnumAdapterByGpuPreference(
+				adapterIndex,
+				requestHighPerformanceAdapter == true ? DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE : DXGI_GPU_PREFERENCE_UNSPECIFIED,
+				IID_PPV_ARGS(&adapter)));
+			++adapterIndex)
+		{
+			DXGI_ADAPTER_DESC1 desc;
+			adapter->GetDesc1(&desc);
+
+			if (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE)
+			{
+				// Don't select the Basic Render Driver adapter.
+				// If you want a software adapter, pass in "/warp" on the command line.
+				continue;
+			}
+
+			// Check to see whether the adapter supports Direct3D 12, but don't create the
+			// actual device yet.
+			if (SUCCEEDED(D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0, _uuidof(ID3D12Device), nullptr)))
+			{
+				break;
+			}
+		}
+	}
+
+	if (adapter.Get() == nullptr)
+	{
+		for (UINT adapterIndex = 0; SUCCEEDED(pFactory->EnumAdapters1(adapterIndex, &adapter)); ++adapterIndex)
+		{
+			DXGI_ADAPTER_DESC1 desc;
+			adapter->GetDesc1(&desc);
+
+			if (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE)
+			{
+				// Don't select the Basic Render Driver adapter.
+				// If you want a software adapter, pass in "/warp" on the command line.
+				continue;
+			}
+
+			// Check to see whether the adapter supports Direct3D 12, but don't create the
+			// actual device yet.
+			if (SUCCEEDED(D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0, _uuidof(ID3D12Device), nullptr)))
+			{
+				break;
+			}
+		}
+	}
+
+	*ppAdapter = adapter.Detach();
+}
 
 //------------------------------------------------------------------------------------------------
 struct CD3DX12_CPU_DESCRIPTOR_HANDLE : public D3D12_CPU_DESCRIPTOR_HANDLE
@@ -81,7 +149,27 @@ struct CD3DX12_CPU_DESCRIPTOR_HANDLE : public D3D12_CPU_DESCRIPTOR_HANDLE
 	}
 };
 
-
+struct CD3DX12_BLEND_DESC : public D3D12_BLEND_DESC
+{
+	explicit CD3DX12_BLEND_DESC(const D3D12_BLEND_DESC& o) noexcept :
+		D3D12_BLEND_DESC(o)
+	{}
+	explicit CD3DX12_BLEND_DESC() noexcept
+	{
+		AlphaToCoverageEnable = FALSE;
+		IndependentBlendEnable = FALSE;
+		const D3D12_RENDER_TARGET_BLEND_DESC defaultRenderTargetBlendDesc =
+		{
+			FALSE,FALSE,
+			D3D12_BLEND_ONE, D3D12_BLEND_ZERO, D3D12_BLEND_OP_ADD,
+			D3D12_BLEND_ONE, D3D12_BLEND_ZERO, D3D12_BLEND_OP_ADD,
+			D3D12_LOGIC_OP_NOOP,
+			D3D12_COLOR_WRITE_ENABLE_ALL,
+		};
+		for (UINT i = 0; i < D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT; ++i)
+			RenderTarget[i] = defaultRenderTargetBlendDesc;
+	}
+};
 
 struct CD3DX12_RASTERIZER_DESC : public D3D12_RASTERIZER_DESC
 {
@@ -151,13 +239,16 @@ inline void GetAssetsPath(_Out_writes_(pathSize) WCHAR* path, UINT pathSize)
 	}
 }
 
+int width = 1280;
+int height = 720;
+
 _Use_decl_annotations_
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
 	try
 	{
 
-		stay::Window window(L"stay", 600, 400);
+		stay::Window window(L"stay", width, height);
 		using Microsoft::WRL::ComPtr;
 
 #ifdef _DEBUG
@@ -191,30 +282,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 		ComPtr<ID3D12Device> pDevice;
 		{
-			ComPtr<IDXGIAdapter> pAdapter;
+			ComPtr<IDXGIAdapter1> pAdapter;
 			{
 
 				UINT i = 0;
 				bool useWarpadapter = false;
 				if (useWarpadapter)
 				{
-					while (pFactory->EnumWarpAdapter(IID_PPV_ARGS(pAdapter.GetAddressOf())) != DXGI_ERROR_NOT_FOUND)
-					{
-						if (D3D12CreateDevice(pAdapter.Get(), D3D_FEATURE_LEVEL_11_0, __uuidof(ID3D12Device), nullptr) == S_OK)
-						{
-							break;
-						}
-					}
+					pFactory->EnumWarpAdapter(IID_PPV_ARGS(pAdapter.GetAddressOf()));
+					
 				}
 				else
 				{
-					while (pFactory->EnumAdapters(i++, pAdapter.GetAddressOf()) != DXGI_ERROR_NOT_FOUND)
-					{
-						if (D3D12CreateDevice(pAdapter.Get(), D3D_FEATURE_LEVEL_11_0, __uuidof(ID3D12Device), nullptr) == S_OK)
-						{
-							break;
-						}
-					}
+					GetHardwareAdapter(pFactory.Get(), pAdapter.GetAddressOf(), false);
 				}
 			}
 			THROW_IF_FAILED(D3D12CreateDevice(pAdapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(pDevice.GetAddressOf())));
@@ -246,8 +326,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 			DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
 			swapChainDesc.BufferCount = 2;
-			swapChainDesc.Width = 600;
-			swapChainDesc.Height = 400;
+			swapChainDesc.Width = width;
+			swapChainDesc.Height = height;
 			swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 			swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 			swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
@@ -339,14 +419,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			std::wstring pathFile(path);
 			pathFile += L"shaders.hlsl";
 
-			THROW_IF_FAILED(D3DCompileFromFile(pathFile.c_str(), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "VSMain", "vs_5_0", complierFlag, 0, vertexShdaer.GetAddressOf(), error.GetAddressOf()));
-			THROW_IF_FAILED(D3DCompileFromFile(pathFile.c_str(), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "PSMain", "ps_5_0", complierFlag, 0, piexlShader.GetAddressOf(), error.GetAddressOf()));
+			THROW_IF_FAILED(D3DCompileFromFile(pathFile.c_str(), nullptr, nullptr, "VSMain", "vs_5_0", complierFlag, 0, vertexShdaer.GetAddressOf(), error.GetAddressOf()));
+			THROW_IF_FAILED(D3DCompileFromFile(pathFile.c_str(), nullptr, nullptr, "PSMain", "ps_5_0", complierFlag, 0, piexlShader.GetAddressOf(), error.GetAddressOf()));
 
 
 			D3D12_INPUT_ELEMENT_DESC inputDecs[] = {
 				{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,
 				D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA , 0},
-				{"COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12,
+				{"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12,
 				D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0} };
 
 			D3D12_GRAPHICS_PIPELINE_STATE_DESC plsDesc{};
@@ -363,6 +443,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			plsDesc.SampleDesc.Count = 1;
 			plsDesc.NumRenderTargets = 1;
 			plsDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+			plsDesc.BlendState = CD3DX12_BLEND_DESC();
 
 			THROW_IF_FAILED(pDevice->CreateGraphicsPipelineState(&plsDesc, IID_PPV_ARGS(&pPiplelineState)));
 
@@ -379,9 +460,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 		VertexData verticeData[]
 		{
-			{{0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}},
-			{{0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 1.0f}},
-			{{1.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 0.0f}},
+			 { { 0.0f, 0.25f , 0.0f }, { 1.0f, 0.0f, 0.0f, 1.0f } },
+			{ { 0.25f, -0.25f , 0.0f }, { 0.0f, 1.0f, 0.0f, 1.0f } },
+			{ { -0.25f, -0.25f , 0.0f }, { 0.0f, 0.0f, 1.0f, 1.0f } }
 		};
 
 		ComPtr<ID3D12Resource> verticeDataResource;
@@ -439,8 +520,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		}
 
 		UINT freamIndex = pSwapChian3->GetCurrentBackBufferIndex();
+		MSG msg;
 		while (true)
 		{
+			PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE);
+			if (msg.message == WM_QUIT)
+			{
+				return msg.wParam;
+			}
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
 
 			{
 				THROW_IF_FAILED(pCommandAlloc->Reset());
@@ -450,13 +539,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 				pCommandList->SetGraphicsRootSignature(pRootSignatrue.Get());
 
 				D3D12_VIEWPORT viewPort{};
-				viewPort.Width = 600;
-				viewPort.Height = 400;
+				viewPort.Width = width;
+				viewPort.Height = height;
 				viewPort.MaxDepth = 1;
 				viewPort.MinDepth = 0;
-				pCommandList->RSSetViewports(0, &viewPort);
+				pCommandList->RSSetViewports(1, &viewPort);
 
-				D3D12_RECT rect = { 0, 0, 600, 400 };
+				D3D12_RECT rect = { 0, 0, width, height };
 				pCommandList->RSSetScissorRects(1, &rect);
 
 				D3D12_RESOURCE_TRANSITION_BARRIER transitionBarrier{};
@@ -479,7 +568,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 
 
-				FLOAT clearColor[] = { 0.3f, 0.0f, 0.5f, 0.0f };
+				FLOAT clearColor[] = { 0.0f, 0.2f, 0.4f, 1.0f };
 				pCommandList->ClearRenderTargetView(rvtHandle, clearColor, 0, nullptr);
 				pCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 				pCommandList->IASetVertexBuffers(0, 1, &vertexBufferView);
