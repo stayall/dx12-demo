@@ -290,7 +290,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 				if (useWarpadapter)
 				{
 					pFactory->EnumWarpAdapter(IID_PPV_ARGS(pAdapter.GetAddressOf()));
-					
+
 				}
 				else
 				{
@@ -386,6 +386,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		ComPtr<ID3D12CommandAllocator> pCommandAlloc;
 		{
 			THROW_IF_FAILED(pDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(pCommandAlloc.GetAddressOf())));
+		}
+
+		ComPtr<ID3D12CommandAllocator> pBundleCommandAlloc;
+		{
+			THROW_IF_FAILED(pDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_BUNDLE, IID_PPV_ARGS(pBundleCommandAlloc.GetAddressOf())));
 		}
 
 		ComPtr<ID3D12RootSignature> pRootSignatrue;
@@ -519,6 +524,21 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			THROW_LASTEXCEPTION();
 		}
 
+
+		ComPtr<ID3D12GraphicsCommandList> pBundleCommandList;
+		THROW_IF_FAILED(pDevice->CreateCommandList(
+			0, D3D12_COMMAND_LIST_TYPE_BUNDLE,
+			pBundleCommandAlloc.Get(),
+			pPiplelineState.Get(),
+			IID_PPV_ARGS(&pBundleCommandList)));
+		{
+			pBundleCommandList->SetGraphicsRootSignature(pRootSignatrue.Get());
+			pBundleCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+			pBundleCommandList->IASetVertexBuffers(0, 1, &vertexBufferView);
+			pBundleCommandList->DrawInstanced(3, 1, 0, 0);
+			THROW_IF_FAILED(pBundleCommandList->Close());
+		}
+
 		UINT freamIndex = pSwapChian3->GetCurrentBackBufferIndex();
 		MSG msg;
 		while (true)
@@ -567,13 +587,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 				pCommandList->OMSetRenderTargets(1, &rvtHandle, FALSE, nullptr);
 
 
-
 				FLOAT clearColor[] = { 0.0f, 0.2f, 0.4f, 1.0f };
 				pCommandList->ClearRenderTargetView(rvtHandle, clearColor, 0, nullptr);
-				pCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-				pCommandList->IASetVertexBuffers(0, 1, &vertexBufferView);
-				pCommandList->DrawInstanced(3, 1, 0, 0);
 
+				pCommandList->ExecuteBundle(pBundleCommandList.Get());
 
 				transitionBarrier.pResource = renderTarget[freamIndex].Get();
 				transitionBarrier.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
@@ -584,6 +601,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 				rtvBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
 				rtvBarrier.Transition = transitionBarrier;
 				pCommandList->ResourceBarrier(1, &rtvBarrier);
+
 
 				THROW_IF_FAILED(pCommandList->Close());
 			}
