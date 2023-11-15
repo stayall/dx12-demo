@@ -12,8 +12,17 @@
 #include <dxgi1_4.h>
 #include <dxgi1_6.h>
 #include <d3dcompiler.h>
+#include "d3dx12.h"
 
 namespace dx = DirectX;
+
+#define Align(x) __declspec(align(x))
+
+
+Align(256) struct MatrixConstantBuffer
+{
+	float offset;
+};
 
 struct VertexData
 {
@@ -88,134 +97,6 @@ void GetHardwareAdapter(
 
 	*ppAdapter = adapter.Detach();
 }
-
-//------------------------------------------------------------------------------------------------
-struct CD3DX12_CPU_DESCRIPTOR_HANDLE : public D3D12_CPU_DESCRIPTOR_HANDLE
-{
-	CD3DX12_CPU_DESCRIPTOR_HANDLE() = default;
-	explicit CD3DX12_CPU_DESCRIPTOR_HANDLE(const D3D12_CPU_DESCRIPTOR_HANDLE& o) noexcept :
-		D3D12_CPU_DESCRIPTOR_HANDLE(o)
-	{}
-	CD3DX12_CPU_DESCRIPTOR_HANDLE(_In_ const D3D12_CPU_DESCRIPTOR_HANDLE& other, INT offsetScaledByIncrementSize) noexcept
-	{
-		InitOffsetted(other, offsetScaledByIncrementSize);
-	}
-	CD3DX12_CPU_DESCRIPTOR_HANDLE(_In_ const D3D12_CPU_DESCRIPTOR_HANDLE& other, INT offsetInDescriptors, UINT descriptorIncrementSize) noexcept
-	{
-		InitOffsetted(other, offsetInDescriptors, descriptorIncrementSize);
-	}
-	CD3DX12_CPU_DESCRIPTOR_HANDLE& Offset(INT offsetInDescriptors, UINT descriptorIncrementSize) noexcept
-	{
-		ptr = SIZE_T(INT64(ptr) + INT64(offsetInDescriptors) * INT64(descriptorIncrementSize));
-		return *this;
-	}
-	CD3DX12_CPU_DESCRIPTOR_HANDLE& Offset(INT offsetScaledByIncrementSize) noexcept
-	{
-		ptr = SIZE_T(INT64(ptr) + INT64(offsetScaledByIncrementSize));
-		return *this;
-	}
-	bool operator==(_In_ const D3D12_CPU_DESCRIPTOR_HANDLE& other) const noexcept
-	{
-		return (ptr == other.ptr);
-	}
-	bool operator!=(_In_ const D3D12_CPU_DESCRIPTOR_HANDLE& other) const noexcept
-	{
-		return (ptr != other.ptr);
-	}
-	CD3DX12_CPU_DESCRIPTOR_HANDLE& operator=(const D3D12_CPU_DESCRIPTOR_HANDLE& other) noexcept
-	{
-		ptr = other.ptr;
-		return *this;
-	}
-
-	inline void InitOffsetted(_In_ const D3D12_CPU_DESCRIPTOR_HANDLE& base, INT offsetScaledByIncrementSize) noexcept
-	{
-		InitOffsetted(*this, base, offsetScaledByIncrementSize);
-	}
-
-	inline void InitOffsetted(_In_ const D3D12_CPU_DESCRIPTOR_HANDLE& base, INT offsetInDescriptors, UINT descriptorIncrementSize) noexcept
-	{
-		InitOffsetted(*this, base, offsetInDescriptors, descriptorIncrementSize);
-	}
-
-	static inline void InitOffsetted(_Out_ D3D12_CPU_DESCRIPTOR_HANDLE& handle, _In_ const D3D12_CPU_DESCRIPTOR_HANDLE& base, INT offsetScaledByIncrementSize) noexcept
-	{
-		handle.ptr = SIZE_T(INT64(base.ptr) + INT64(offsetScaledByIncrementSize));
-	}
-
-	static inline void InitOffsetted(_Out_ D3D12_CPU_DESCRIPTOR_HANDLE& handle, _In_ const D3D12_CPU_DESCRIPTOR_HANDLE& base, INT offsetInDescriptors, UINT descriptorIncrementSize) noexcept
-	{
-		handle.ptr = SIZE_T(INT64(base.ptr) + INT64(offsetInDescriptors) * INT64(descriptorIncrementSize));
-	}
-};
-
-struct CD3DX12_BLEND_DESC : public D3D12_BLEND_DESC
-{
-	explicit CD3DX12_BLEND_DESC(const D3D12_BLEND_DESC& o) noexcept :
-		D3D12_BLEND_DESC(o)
-	{}
-	explicit CD3DX12_BLEND_DESC() noexcept
-	{
-		AlphaToCoverageEnable = FALSE;
-		IndependentBlendEnable = FALSE;
-		const D3D12_RENDER_TARGET_BLEND_DESC defaultRenderTargetBlendDesc =
-		{
-			FALSE,FALSE,
-			D3D12_BLEND_ONE, D3D12_BLEND_ZERO, D3D12_BLEND_OP_ADD,
-			D3D12_BLEND_ONE, D3D12_BLEND_ZERO, D3D12_BLEND_OP_ADD,
-			D3D12_LOGIC_OP_NOOP,
-			D3D12_COLOR_WRITE_ENABLE_ALL,
-		};
-		for (UINT i = 0; i < D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT; ++i)
-			RenderTarget[i] = defaultRenderTargetBlendDesc;
-	}
-};
-
-struct CD3DX12_RASTERIZER_DESC : public D3D12_RASTERIZER_DESC
-{
-	explicit CD3DX12_RASTERIZER_DESC(const D3D12_RASTERIZER_DESC& o) noexcept :
-		D3D12_RASTERIZER_DESC(o)
-	{}
-	explicit CD3DX12_RASTERIZER_DESC() noexcept
-	{
-		FillMode = D3D12_FILL_MODE_SOLID;
-		CullMode = D3D12_CULL_MODE_BACK;
-		FrontCounterClockwise = FALSE;
-		DepthBias = D3D12_DEFAULT_DEPTH_BIAS;
-		DepthBiasClamp = D3D12_DEFAULT_DEPTH_BIAS_CLAMP;
-		SlopeScaledDepthBias = D3D12_DEFAULT_SLOPE_SCALED_DEPTH_BIAS;
-		DepthClipEnable = TRUE;
-		MultisampleEnable = FALSE;
-		AntialiasedLineEnable = FALSE;
-		ForcedSampleCount = 0;
-		ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
-	}
-	explicit CD3DX12_RASTERIZER_DESC(
-		D3D12_FILL_MODE fillMode,
-		D3D12_CULL_MODE cullMode,
-		BOOL frontCounterClockwise,
-		INT depthBias,
-		FLOAT depthBiasClamp,
-		FLOAT slopeScaledDepthBias,
-		BOOL depthClipEnable,
-		BOOL multisampleEnable,
-		BOOL antialiasedLineEnable,
-		UINT forcedSampleCount,
-		D3D12_CONSERVATIVE_RASTERIZATION_MODE conservativeRaster) noexcept
-	{
-		FillMode = fillMode;
-		CullMode = cullMode;
-		FrontCounterClockwise = frontCounterClockwise;
-		DepthBias = depthBias;
-		DepthBiasClamp = depthBiasClamp;
-		SlopeScaledDepthBias = slopeScaledDepthBias;
-		DepthClipEnable = depthClipEnable;
-		MultisampleEnable = multisampleEnable;
-		AntialiasedLineEnable = antialiasedLineEnable;
-		ForcedSampleCount = forcedSampleCount;
-		ConservativeRaster = conservativeRaster;
-	}
-};
 
 
 inline void GetAssetsPath(_Out_writes_(pathSize) WCHAR* path, UINT pathSize)
@@ -395,12 +276,57 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 		ComPtr<ID3D12RootSignature> pRootSignatrue;
 		{
-			D3D12_ROOT_SIGNATURE_DESC rsDecs{};
-			rsDecs.NumParameters = 0;
-			rsDecs.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+
+			D3D12_FEATURE_DATA_ROOT_SIGNATURE rootFeature{};
+			rootFeature.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_1;
+
+			if (pDevice->CheckFeatureSupport(D3D12_FEATURE_ROOT_SIGNATURE, &rootFeature, sizeof(rootFeature)) == E_INVALIDARG)
+			{
+				rootFeature.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_0;
+			}
+
+
+			D3D12_DESCRIPTOR_RANGE1 dcrpRange[1];
+			dcrpRange->RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
+			dcrpRange->NumDescriptors = 1;
+			dcrpRange->BaseShaderRegister = 0;
+			dcrpRange->Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DATA_STATIC;
+			dcrpRange->OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+			dcrpRange->RegisterSpace = 0;
+
+			
+			D3D12_ROOT_DESCRIPTOR_TABLE1 rdt{};
+			rdt.NumDescriptorRanges = _countof(dcrpRange);
+			rdt.pDescriptorRanges = &dcrpRange[0];
+
+			D3D12_ROOT_PARAMETER1 rp[1];
+			rp->ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+			rp->DescriptorTable = rdt;
+			rp->ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
+			
+
+			D3D12_ROOT_SIGNATURE_DESC1 rsDecs{};
+			rsDecs.NumParameters = _countof(rp);
+			rsDecs.pParameters = rp;
+			rsDecs.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |
+				D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
+				D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
+				D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS |
+				D3D12_ROOT_SIGNATURE_FLAG_DENY_PIXEL_SHADER_ROOT_ACCESS;
+
+			
+
+			D3D12_VERSIONED_ROOT_SIGNATURE_DESC vrsd;
+			vrsd.Version = rootFeature.HighestVersion;
+			vrsd.Desc_1_1 = rsDecs;
+
+			
+
+
+
 			ComPtr<ID3DBlob> signatrue;
 			ComPtr<ID3DBlob> error;
-			THROW_IF_FAILED(D3D12SerializeRootSignature(&rsDecs, D3D_ROOT_SIGNATURE_VERSION_1, signatrue.GetAddressOf(), error.GetAddressOf()));
+			THROW_IF_FAILED(D3D12SerializeVersionedRootSignature(&vrsd,  signatrue.GetAddressOf(), error.GetAddressOf()));
 
 			THROW_IF_FAILED(pDevice->CreateRootSignature(0, signatrue->GetBufferPointer(), signatrue->GetBufferSize(), IID_PPV_ARGS(pRootSignatrue.GetAddressOf())));
 		}
@@ -442,13 +368,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			plsDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 
 			plsDesc.SampleMask = UINT_MAX;
-			plsDesc.RasterizerState = CD3DX12_RASTERIZER_DESC();
+			plsDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
 			plsDesc.DepthStencilState.DepthEnable = FALSE;
 			plsDesc.DepthStencilState.StencilEnable = FALSE;
 			plsDesc.SampleDesc.Count = 1;
 			plsDesc.NumRenderTargets = 1;
 			plsDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
-			plsDesc.BlendState = CD3DX12_BLEND_DESC();
+			plsDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
 
 			THROW_IF_FAILED(pDevice->CreateGraphicsPipelineState(&plsDesc, IID_PPV_ARGS(&pPiplelineState)));
 
@@ -525,6 +451,58 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		}
 
 
+
+		ComPtr<ID3D12DescriptorHeap> cbHeap;
+		{
+			D3D12_DESCRIPTOR_HEAP_DESC cbhDesc{};
+			cbhDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+			cbhDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+			cbhDesc.NumDescriptors = 1;
+
+			THROW_IF_FAILED(pDevice->CreateDescriptorHeap(&cbhDesc, IID_PPV_ARGS(cbHeap.GetAddressOf())));
+		}
+
+		MatrixConstantBuffer offset;
+		UINT8* pCbV;
+		ComPtr<ID3D12Resource> cbvRes;
+		{
+			D3D12_HEAP_PROPERTIES cbvProp{};
+			cbvProp.Type = D3D12_HEAP_TYPE_UPLOAD;
+
+			D3D12_RESOURCE_DESC resDesc{};
+			resDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+			resDesc.Width = sizeof(offset);
+			resDesc.Height = 1;
+			resDesc.DepthOrArraySize = 1;
+			resDesc.MipLevels = 1;
+			resDesc.Format = DXGI_FORMAT_UNKNOWN;
+			resDesc.SampleDesc.Count = 1;
+			resDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+
+			THROW_IF_FAILED(pDevice->CreateCommittedResource(
+				&cbvProp, D3D12_HEAP_FLAG_NONE,
+				&resDesc, D3D12_RESOURCE_STATE_GENERIC_READ,
+				nullptr, IID_PPV_ARGS(&cbvRes)));
+
+			D3D12_RANGE range{};
+			cbvRes->Map(0, &range, reinterpret_cast<void**>(&pCbV));
+			memcpy(pCbV, &offset, sizeof(offset));
+		}
+
+
+		{
+			D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc{};
+			cbvDesc.BufferLocation = cbvRes->GetGPUVirtualAddress();
+			cbvDesc.SizeInBytes = sizeof(offset);
+
+
+			D3D12_CPU_DESCRIPTOR_HANDLE cbvHandle(cbHeap->GetCPUDescriptorHandleForHeapStart());
+			cbvDesc.BufferLocation = cbvRes->GetGPUVirtualAddress();
+			cbvDesc.SizeInBytes = sizeof(offset);
+
+			pDevice->CreateConstantBufferView(&cbvDesc, cbvHandle);
+		}
+
 		ComPtr<ID3D12GraphicsCommandList> pBundleCommandList;
 		THROW_IF_FAILED(pDevice->CreateCommandList(
 			0, D3D12_COMMAND_LIST_TYPE_BUNDLE,
@@ -539,6 +517,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			THROW_IF_FAILED(pBundleCommandList->Close());
 		}
 
+
+
+
+
 		UINT freamIndex = pSwapChian3->GetCurrentBackBufferIndex();
 		MSG msg;
 		while (true)
@@ -551,6 +533,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 
+			{
+				offset.offset += 0.01;
+				memcpy(pCbV, &offset, sizeof(offset));
+			}
 			{
 				THROW_IF_FAILED(pCommandAlloc->Reset());
 				THROW_IF_FAILED(pCommandList->Reset(pCommandAlloc.Get(), pPiplelineState.Get()));
@@ -567,6 +553,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 				D3D12_RECT rect = { 0, 0, width, height };
 				pCommandList->RSSetScissorRects(1, &rect);
+
+				ID3D12DescriptorHeap* ppHeaps[] = { cbHeap.Get() };
+				pCommandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
+				pCommandList->SetGraphicsRootDescriptorTable(0, cbHeap->GetGPUDescriptorHandleForHeapStart());
 
 				D3D12_RESOURCE_TRANSITION_BARRIER transitionBarrier{};
 				transitionBarrier.pResource = renderTarget[freamIndex].Get();
