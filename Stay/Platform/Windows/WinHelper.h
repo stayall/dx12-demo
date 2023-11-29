@@ -12,6 +12,13 @@ namespace stay
 		static std::wstring MultiByteToWideChar(const LPCSTR str);
 		static std::string WideCharToMultiByte(const LPCWSTR wstr);
 	};
+
+	class FileHelper
+	{
+	public:
+		static void GetAssetsPath(_Out_writes_(pathSize) WCHAR* path, UINT pathSize);
+		
+	};
 }
 
 #endif // !_STAY_WINDOWS_HELPER_H_
