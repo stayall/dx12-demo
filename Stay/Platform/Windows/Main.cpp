@@ -4,6 +4,7 @@
 #include "Window.h"
 #include "WinError.h"
 #include "WinHelper.h"
+#include "App.h"
 
 #include <d3d12.h>
 #include <DirectXMath.h>
@@ -12,11 +13,16 @@
 #include <dxgi1_4.h>
 #include <dxgi1_6.h>
 #include <d3dcompiler.h>
+#include <filesystem>
+#include "ClassAttribute.h"
+
 #include "d3dx12.h"
+
+
 
 namespace dx = DirectX;
 
-#define Align(x) __declspec(align(x))
+
 
 
 Align(256) struct MatrixConstantBuffer
@@ -128,7 +134,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
 	try
 	{
-
 		stay::Window window(L"stay", width, height);
 		using Microsoft::WRL::ComPtr;
 
@@ -349,9 +354,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 			std::wstring pathFile(path);
 			pathFile += L"shaders.hlsl";
-
-			THROW_IF_FAILED(D3DCompileFromFile(pathFile.c_str(), nullptr, nullptr, "VSMain", "vs_5_0", complierFlag, 0, vertexShdaer.GetAddressOf(), error.GetAddressOf()));
-			THROW_IF_FAILED(D3DCompileFromFile(pathFile.c_str(), nullptr, nullptr, "PSMain", "ps_5_0", complierFlag, 0, piexlShader.GetAddressOf(), error.GetAddressOf()));
+			
+			THROW_IF_FAILED(D3DReadFileToBlob(L"CompiledShaders/VSshaders.cso", &vertexShdaer));
+			THROW_IF_FAILED(D3DReadFileToBlob(L"CompiledShaders/PSshaders.cso", &piexlShader));
+			//THROW_IF_FAILED(D3DCompileFromFile(pathFile.c_str(), nullptr, nullptr, "VSMain", "vs_5_0", complierFlag, 0, vertexShdaer.GetAddressOf(), error.GetAddressOf()));
+			//THROW_IF_FAILED(D3DCompileFromFile(pathFile.c_str(), nullptr, nullptr, "PSMain", "ps_5_0", complierFlag, 0, piexlShader.GetAddressOf(), error.GetAddressOf()));
 
 
 			D3D12_INPUT_ELEMENT_DESC inputDecs[] = {
@@ -461,7 +468,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 			THROW_IF_FAILED(pDevice->CreateDescriptorHeap(&cbhDesc, IID_PPV_ARGS(cbHeap.GetAddressOf())));
 		}
-
+		
 		MatrixConstantBuffer offset;
 		UINT8* pCbV;
 		ComPtr<ID3D12Resource> cbvRes;
@@ -520,18 +527,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 
 
-
 		UINT freamIndex = pSwapChian3->GetCurrentBackBufferIndex();
-		MSG msg;
-		while (true)
+		stay::App app;
+		while (!app.CheckMessage())
 		{
-			PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE);
-			if (msg.message == WM_QUIT)
-			{
-				return msg.wParam;
-			}
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
 
 			{
 				offset.offset += 0.01;
