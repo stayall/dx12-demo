@@ -57,13 +57,52 @@ namespace stay
 
 }
 
+
+#ifndef RELEASE
+void PrintSubMessage() {}
+inline void PrintSubMessage(const char* format, ...)
+{
+	char buffer[256];
+	va_list ap;
+	va_start(ap, format);
+	vsprintf_s(buffer, 256, format, ap);
+	va_end(ap);
+	OutputDebugStringA(buffer);
+}
+#endif
+
+#ifdef _DEBUG
+#define OUTPUTSTR(format, ...)
+
+
 #define THROW_LASTEXCEPTION() \
 	throw stay::WindowException(__FILE__, __LINE__, GetLastError())
+
+#define ASSERT(hr, ...)\
+do {\
+	if (!(bool)(hr)) \
+	{\
+		PrintSubMessage(#hr);\
+		PrintSubMessage(__VA_ARGS__);\
+		THROW_LASTEXCEPTION(); \
+	}\
+} while (0)
+
+#define ERRORSTR(e) e.what()
 #define CHWON_EXCEPTION(hr) stay::WindowException(__FILE__, __LINE__, hr)
+
 #define THROW_IF_FAILED(hr) \
 	do {if (hr != S_OK) \
 	{\
-		throw CHWON_EXCEPTION(hr);\
+		auto e = CHWON_EXCEPTION(hr);\
+		OutputDebugStringA(ERRORSTR(e));\
+		throw e;\
 	}}while(0)
 
+#elif _RELESE
+#define THROW_IF_FAILED(hr) (void)(hr)
+#define ASSERT(hr) (void)(hr)
+#endif // _DEBUG
+
 #endif // !_STAY_WINDOWS_ERROR_H_
+
