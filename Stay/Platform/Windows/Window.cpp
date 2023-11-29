@@ -60,6 +60,9 @@ namespace stay
 
 	Window::Window(LPCWSTR windowName, int x, int y)
 	{
+		width = x;
+		height = y;
+
 		DWORD dwExStyle = WS_EX_ACCEPTFILES | WS_EX_LEFT | WS_EX_NOINHERITLAYOUT | WS_EX_APPWINDOW;
 		hWnd = CreateWindowEx(
 			dwExStyle,
@@ -67,7 +70,7 @@ namespace stay
 			windowName,
 			WS_OVERLAPPEDWINDOW,
 			100, 100,
-			x, y,
+			width, height,
 			nullptr,
 			nullptr,
 			GetModuleHandle(LPCWSTR()),
@@ -87,7 +90,7 @@ namespace stay
 		DestroyWindow(hWnd);
 	}
 
-	HWND Window::getHWnd() noexcept
+	HWND Window::getHWnd() const noexcept
 	{
 		return hWnd;
 	}
