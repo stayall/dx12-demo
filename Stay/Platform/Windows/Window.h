@@ -14,7 +14,9 @@ namespace stay
 		Window(LPCWSTR windowName, int x = 1000, int y = 600);
 		~Window();
 
-		HWND getHWnd() noexcept;
+		HWND getHWnd() const noexcept;
+		UINT getWidth() const noexcept { return width; }
+		UINT getHeight() const noexcept { return height; }
 
 		class WindowRegister
 		{
@@ -36,6 +38,8 @@ namespace stay
 
 	private:
 		static WindowRegister windowClass;
+		UINT width;
+		UINT height;
 		HWND hWnd;
 	};
 }
