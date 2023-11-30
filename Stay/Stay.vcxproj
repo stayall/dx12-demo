@@ -70,6 +70,14 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>$(SolutionDir)\Bulid\$(Platform)\$(Configuration)\Output\</OutDir>
+    <IntDir>$(SolutionDir)\Bulid\$(Platform)\$(Configuration)\Intermediate\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(SolutionDir)\Bulid\$(Platform)\$(Configuration)\Output\</OutDir>
+    <IntDir>$(SolutionDir)\Bulid\$(Platform)\$(Configuration)\Intermediate\</IntDir>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -103,9 +111,9 @@
       <WarningLevel>Level4</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>false</ConformanceMode>
-      <LanguageStandard>Default</LanguageStandard>
-      <LanguageStandard_C>Default</LanguageStandard_C>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard_C>stdc11</LanguageStandard_C>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -113,7 +121,7 @@
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>D3d12.lib;D3DCompiler.lib;dxgi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <EntryPointSymbol>
@@ -126,17 +134,17 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>false</ConformanceMode>
-      <LanguageStandard>Default</LanguageStandard>
-      <LanguageStandard_C>Default</LanguageStandard_C>
+      <PreprocessorDefinitions>_RELEASE;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard_C>stdc11</LanguageStandard_C>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FloatingPointModel>Fast</FloatingPointModel>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -147,14 +155,26 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="FreamWork\Common\BaseApplication.cpp" />
-    <ClCompile Include="FreamWork\Common\main.cpp" />
     <ClCompile Include="FreamWork\Empty\EmptyApplication.h" />
+    <ClCompile Include="Platform\Windows\App.cpp" />
+    <ClCompile Include="Platform\Windows\Exception.cpp" />
+    <ClCompile Include="Platform\Windows\Main.cpp" />
+    <ClCompile Include="Platform\Windows\Window.cpp" />
+    <ClCompile Include="Platform\Windows\WinError.cpp" />
+    <ClCompile Include="Platform\Windows\WinHelper.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FreamWork\Common\BaseApplication.h" />
     <ClInclude Include="FreamWork\Interface\IApplication.h" />
     <ClInclude Include="FreamWork\Interface\IRuntimeModule.h" />
     <ClInclude Include="FreamWork\Interface\IUnkown.h" />
+    <ClInclude Include="Platform\Windows\App.h" />
+    <ClInclude Include="Platform\Windows\d3dx12.h" />
+    <ClInclude Include="Platform\Windows\Exception.h" />
+    <ClInclude Include="Platform\Windows\Window.h" />
+    <ClInclude Include="Platform\Windows\WinError.h" />
+    <ClInclude Include="Platform\Windows\WinHelper.h" />
+    <ClInclude Include="Platform\Windows\WinStd.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="CMakeLists.txt" />
