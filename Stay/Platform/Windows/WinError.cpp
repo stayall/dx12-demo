@@ -72,7 +72,7 @@ namespace stay
 	std::string WindowException::TranslateError(HRESULT hr)
 	{
 		const DWORD wSize = 128;
-		CHAR* strError = "";
+		const CHAR* strError = "";
 
 		DWORD size = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_ALLOCATE_BUFFER,
 			nullptr,

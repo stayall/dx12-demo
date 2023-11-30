@@ -7,6 +7,11 @@ namespace  stay::Graphics
 {
 	ID3D12Device *g_Device;
 
+	void GetHardwareAdapter(
+		IDXGIFactory1* pFactory,
+		IDXGIAdapter1** ppAdapter,
+		bool requestHighPerformanceAdapter);
+
 	void Initialize()
 	{
 

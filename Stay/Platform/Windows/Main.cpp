@@ -134,6 +134,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
 	try
 	{
+		int a = 0;
 		stay::Window window(L"stay", width, height);
 		using Microsoft::WRL::ComPtr;
 
@@ -469,7 +470,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			THROW_IF_FAILED(pDevice->CreateDescriptorHeap(&cbhDesc, IID_PPV_ARGS(cbHeap.GetAddressOf())));
 		}
 		
-		MatrixConstantBuffer offset;
+		MatrixConstantBuffer offset{};
 		UINT8* pCbV;
 		ComPtr<ID3D12Resource> cbvRes;
 		{
@@ -544,8 +545,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 				pCommandList->SetGraphicsRootSignature(pRootSignatrue.Get());
 
 				D3D12_VIEWPORT viewPort{};
-				viewPort.Width = width;
-				viewPort.Height = height;
+				viewPort.Width = (float)width;
+				viewPort.Height = (float)height;
 				viewPort.MaxDepth = 1;
 				viewPort.MinDepth = 0;
 				pCommandList->RSSetViewports(1, &viewPort);

@@ -73,10 +73,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)\Bulid\$(Platform)\$(Configuration)\Output\</OutDir>
     <IntDir>$(SolutionDir)\Bulid\$(Platform)\$(Configuration)\Intermediate\</IntDir>
+    <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)\Bulid\$(Platform)\$(Configuration)\Output\</OutDir>
     <IntDir>$(SolutionDir)\Bulid\$(Platform)\$(Configuration)\Intermediate\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -109,24 +111,33 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
-      <SDLCheck>true</SDLCheck>
+      <SDLCheck>
+      </SDLCheck>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
+      <ConformanceMode>Default</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <LanguageStandard_C>stdc11</LanguageStandard_C>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <MultiProcessorCompilation>
+      </MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <FloatingPointModel>Fast</FloatingPointModel>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <SupportJustMyCode>false</SupportJustMyCode>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <AdditionalDependencies>D3d12.lib;D3DCompiler.lib;dxgi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <EntryPointSymbol>
       </EntryPointSymbol>
+      <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
     </Link>
+    <FxCompile>
+      <ObjectFileOutput>../CompiledShaders/%(Filename).cso</ObjectFileOutput>
+    </FxCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -135,7 +146,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_RELEASE;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
+      <ConformanceMode>Default</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc11</LanguageStandard_C>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -152,13 +163,22 @@
       <EntryPointSymbol>
       </EntryPointSymbol>
     </Link>
+    <FxCompile>
+      <ObjectFileOutput>../CompiledShaders/%(Filename).cso</ObjectFileOutput>
+    </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="FreamWork\Common\BaseApplication.cpp" />
     <ClCompile Include="FreamWork\Empty\EmptyApplication.h" />
     <ClCompile Include="Platform\Windows\App.cpp" />
+    <ClCompile Include="Platform\Windows\CommandListManager.cpp" />
+    <ClCompile Include="Platform\Windows\CommandQueueManager.cpp" />
+    <ClCompile Include="Platform\Windows\Display.cpp" />
     <ClCompile Include="Platform\Windows\Exception.cpp" />
+    <ClCompile Include="Platform\Windows\Graphics.cpp" />
+    <ClCompile Include="Platform\Windows\GraphicsCore.cpp" />
     <ClCompile Include="Platform\Windows\Main.cpp" />
+    <ClCompile Include="Platform\Windows\PipelineState.cpp" />
     <ClCompile Include="Platform\Windows\Window.cpp" />
     <ClCompile Include="Platform\Windows\WinError.cpp" />
     <ClCompile Include="Platform\Windows\WinHelper.cpp" />
@@ -169,8 +189,17 @@
     <ClInclude Include="FreamWork\Interface\IRuntimeModule.h" />
     <ClInclude Include="FreamWork\Interface\IUnkown.h" />
     <ClInclude Include="Platform\Windows\App.h" />
+    <ClInclude Include="Platform\Windows\ClassAttribute.h" />
+    <ClInclude Include="Platform\Windows\CommandListManager.h" />
+    <ClInclude Include="Platform\Windows\CommandQueueManager.h" />
     <ClInclude Include="Platform\Windows\d3dx12.h" />
+    <ClInclude Include="Platform\Windows\Display.h" />
     <ClInclude Include="Platform\Windows\Exception.h" />
+    <ClInclude Include="Platform\Windows\Graphics.h" />
+    <ClInclude Include="Platform\Windows\GraphicsCore.h" />
+    <ClInclude Include="Platform\Windows\PipelineState.h" />
+    <ClInclude Include="Platform\Windows\Resource\resource1.h" />
+    <ClInclude Include="Platform\Windows\RootSignature.h" />
     <ClInclude Include="Platform\Windows\Window.h" />
     <ClInclude Include="Platform\Windows\WinError.h" />
     <ClInclude Include="Platform\Windows\WinHelper.h" />
@@ -178,6 +207,21 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Platform\Windows\Resource\Resource.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Platform\Windows\Shader\PSshaders.hlsl">
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">../CompiledShaders/%(Filename).cso</ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../CompiledShaders/%(Filename).cso</ObjectFileOutput>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Platform\Windows\Shader\VSshaders.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+    </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

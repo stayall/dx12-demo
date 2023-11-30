@@ -40,7 +40,7 @@ namespace stay
 		HRESULT hr = x; \
 		if (FAILED(hr))\
 		{\
-			ErrorTraceW(__FILEW__, __LINE__, L#x, true);\
+			ErrorTraceW(__FILEW__, __LINE__, L##x, true);\
 		}
 #endif // !hr
 
@@ -58,8 +58,8 @@ namespace stay
 }
 
 
-#ifndef RELEASE
-void PrintSubMessage() {}
+#ifndef _RELEASE
+inline void PrintSubMessage() {}
 inline void PrintSubMessage(const char* format, ...)
 {
 	char buffer[256];
@@ -99,9 +99,10 @@ do {\
 		throw e;\
 	}}while(0)
 
-#elif _RELESE
+#elif _RELEASE
 #define THROW_IF_FAILED(hr) (void)(hr)
-#define ASSERT(hr) (void)(hr)
+#define ASSERT(hr, ...) (void)(hr)
+#define THROW_LASTEXCEPTION()
 #endif // _DEBUG
 
 #endif // !_STAY_WINDOWS_ERROR_H_
