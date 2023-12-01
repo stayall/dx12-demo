@@ -134,7 +134,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
 	try
 	{
-		int a = 0;
 		stay::Window window(L"stay", width, height);
 		using Microsoft::WRL::ComPtr;
 
@@ -172,7 +171,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			ComPtr<IDXGIAdapter1> pAdapter;
 			{
 
-				UINT i = 0;
 				bool useWarpadapter = false;
 				if (useWarpadapter)
 				{

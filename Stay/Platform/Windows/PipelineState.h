@@ -10,7 +10,7 @@ namespace stay
 	class PSO
 	{
 	public:
-		PSO(const wchar_t* name = L"Unnamed PSO") : m_name(name) {};
+		PSO(const wchar_t* name = L"Unnamed PSO") : m_name(name), m_rootSignature(nullptr), m_pipelineState(nullptr) {};
 
 		void SetRootSignature(RootSignature* rootSignature) { m_rootSignature = rootSignature; }
 		RootSignature* GetRootSignature() const { return m_rootSignature; }
@@ -19,8 +19,8 @@ namespace stay
 	protected:
 		const wchar_t* m_name;
 
-		RootSignature* m_rootSignature;
-		ID3D12PipelineState* m_pipelineState;
+		RootSignature* m_rootSignature = nullptr;
+		ID3D12PipelineState* m_pipelineState = nullptr;
 	};
 
 	class GraphicsPSO : PSO

@@ -5,6 +5,7 @@
 namespace stay
 {
 	GraphicsPSO::GraphicsPSO(const wchar_t* name)
+		: PSO(name)
 	{
 		ZeroMemory(&m_pipelineStateDesc, sizeof(m_pipelineStateDesc));
 		m_pipelineStateDesc.SampleMask = 0xFFFFFFFFu;
@@ -37,6 +38,7 @@ namespace stay
 		ASSERT(m_rootSignature != nullptr, "Root Signature Is Null");
 
 		THROW_IF_FAILED(Graphics::g_Device->CreateGraphicsPipelineState(&m_pipelineStateDesc, IID_PPV_ARGS(&m_pipelineState)));
+		m_pipelineState->SetName(m_name);
 
 	}
 

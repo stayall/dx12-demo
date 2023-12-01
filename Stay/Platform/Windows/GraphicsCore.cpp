@@ -3,7 +3,7 @@
 
 using namespace Microsoft::WRL;
 
-namespace  stay::Graphics
+namespace stay::Graphics
 {
 	ID3D12Device *g_Device;
 
@@ -11,6 +11,11 @@ namespace  stay::Graphics
 		IDXGIFactory1* pFactory,
 		IDXGIAdapter1** ppAdapter,
 		bool requestHighPerformanceAdapter);
+
+	ID3D12Device* GetDevice()
+	{
+		return g_Device;
+	}
 
 	void Initialize()
 	{
@@ -31,7 +36,6 @@ namespace  stay::Graphics
 			ComPtr<IDXGIAdapter1> pAdapter;
 			{
 
-				UINT i = 0;
 				bool useWarpadapter = false;
 				if (useWarpadapter)
 				{
