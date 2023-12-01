@@ -57,6 +57,9 @@
     <ClCompile Include="Platform\Windows\PipelineState.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Platform\Windows\RootSignature.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FreamWork\Common\BaseApplication.h">

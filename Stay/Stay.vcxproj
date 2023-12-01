@@ -179,6 +179,7 @@
     <ClCompile Include="Platform\Windows\GraphicsCore.cpp" />
     <ClCompile Include="Platform\Windows\Main.cpp" />
     <ClCompile Include="Platform\Windows\PipelineState.cpp" />
+    <ClCompile Include="Platform\Windows\RootSignature.cpp" />
     <ClCompile Include="Platform\Windows\Window.cpp" />
     <ClCompile Include="Platform\Windows\WinError.cpp" />
     <ClCompile Include="Platform\Windows\WinHelper.cpp" />
