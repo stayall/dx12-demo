@@ -14,6 +14,7 @@ namespace stay
 		~App() = default;
 		std::optional<int> CheckMessage();
 
+		Window& GetWindow() const { return *window.get(); };
 	private:
 		MSG msg;
 		std::unique_ptr<Window> window;

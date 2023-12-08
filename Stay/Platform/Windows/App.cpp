@@ -12,7 +12,7 @@ namespace stay
 		PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE);
 		if (msg.message == WM_QUIT)
 		{
-			return { msg.wParam };
+			return { (int)msg.wParam };
 		}
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);

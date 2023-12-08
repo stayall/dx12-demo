@@ -84,7 +84,7 @@ do {\
 	{\
 		PrintSubMessage(#hr);\
 		PrintSubMessage(__VA_ARGS__);\
-		THROW_LASTEXCEPTION(); \
+		__debugbreak(); \
 	}\
 } while (0)
 

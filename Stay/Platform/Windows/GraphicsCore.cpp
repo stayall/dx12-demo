@@ -1,57 +1,89 @@
-#include "GraphicsCore.h"
 #include "WinError.h"
+#include "WinStd.h"
+
+#include "App.h"
+
+#include "GraphicsCore.h"
+#include "CommandQueueManager.h"
 
 using namespace Microsoft::WRL;
 
 namespace stay::Graphics
 {
-	ID3D12Device *g_Device;
+	ID3D12Device* g_Device;
+	App* g_App;
+	CommandQueueManager g_CommandManager;
 
 	void GetHardwareAdapter(
 		IDXGIFactory1* pFactory,
 		IDXGIAdapter1** ppAdapter,
 		bool requestHighPerformanceAdapter);
 
-	ID3D12Device* GetDevice()
-	{
-		return g_Device;
-	}
 
 	void Initialize()
 	{
 
-		ComPtr<IDXGIFactory4> pFactory;
-		{
-#ifdef _DEBUG
-
-			THROW_IF_FAILED(CreateDXGIFactory2(DXGI_CREATE_FACTORY_DEBUG, IID_PPV_ARGS(pFactory.GetAddressOf())));
-#else
-			THROW_IF_FAILED(CreateDXGIFactory2(0, IID_PPV_ARGS(pFactory.GetAddressOf())));
-#endif // _DEBUG
-
-		}
-
+		g_App = new App();
 		ComPtr<ID3D12Device> pDevice;
 		{
-			ComPtr<IDXGIAdapter1> pAdapter;
+
+			ComPtr<IDXGIFactory4> pFactory;
+			{
+#ifdef _DEBUG
+
+				THROW_IF_FAILED(CreateDXGIFactory2(DXGI_CREATE_FACTORY_DEBUG, IID_PPV_ARGS(pFactory.GetAddressOf())));
+#else
+				THROW_IF_FAILED(CreateDXGIFactory2(0, IID_PPV_ARGS(pFactory.GetAddressOf())));
+#endif // _DEBUG
+
+			}
+
 			{
 
-				bool useWarpadapter = false;
-				if (useWarpadapter)
+				ComPtr<IDXGIAdapter1> pAdapter;
 				{
-					pFactory->EnumWarpAdapter(IID_PPV_ARGS(pAdapter.GetAddressOf()));
 
+					bool useWarpadapter = false;
+					if (useWarpadapter)
+					{
+						pFactory->EnumWarpAdapter(IID_PPV_ARGS(pAdapter.GetAddressOf()));
+
+					}
+					else
+					{
+						GetHardwareAdapter(pFactory.Get(), pAdapter.GetAddressOf(), false);
+					}
 				}
-				else
-				{
-					GetHardwareAdapter(pFactory.Get(), pAdapter.GetAddressOf(), false);
-				}
+				THROW_IF_FAILED(D3D12CreateDevice(pAdapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(pDevice.GetAddressOf())));
 			}
-			THROW_IF_FAILED(D3D12CreateDevice(pAdapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(pDevice.GetAddressOf())));
+
+
+#ifdef _DEBUG
+			{
+				ComPtr<ID3D12InfoQueue> InfoQueue;
+				THROW_IF_FAILED(pDevice->QueryInterface(IID_PPV_ARGS(&InfoQueue)));
+				InfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, true);
+				InfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, true);
+				InfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, false);
+			}
+#endif // _DEBUG
+
+
+		}
+		g_Device = pDevice.Detach();
+
+		g_CommandManager.Initialize(g_Device);
+	}
+
+	void Finalize()
+	{
+		g_CommandManager.Finalize();
+		SAFE_RELEASE(g_Device);
+		if (g_App != nullptr)
+		{
+			delete g_App;
 		}
 
-
-		g_Device = pDevice.Detach();
 	}
 
 	void GetHardwareAdapter(

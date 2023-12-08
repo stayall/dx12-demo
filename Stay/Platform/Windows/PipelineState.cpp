@@ -1,6 +1,7 @@
 #include "PipelineState.h"
 #include "WinError.h"
 #include "GraphicsCore.h"
+#include "RootSignature.h"
 
 namespace stay
 {
@@ -33,11 +34,11 @@ namespace stay
 		m_pipelineStateDesc.SampleDesc.Quality = msaaQuality;
 	}
 
-	void GraphicsPSO::Fnalize()
+	void GraphicsPSO::Fnalize(ID3D12Device* device)
 	{
 		ASSERT(m_rootSignature != nullptr, "Root Signature Is Null");
-
-		THROW_IF_FAILED(Graphics::g_Device->CreateGraphicsPipelineState(&m_pipelineStateDesc, IID_PPV_ARGS(&m_pipelineState)));
+		m_pipelineStateDesc.pRootSignature = m_rootSignature->GetRootSignature();
+		THROW_IF_FAILED(device->CreateGraphicsPipelineState(&m_pipelineStateDesc, IID_PPV_ARGS(&m_pipelineState)));
 		m_pipelineState->SetName(m_name);
 
 	}

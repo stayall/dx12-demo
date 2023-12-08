@@ -6,7 +6,6 @@ namespace stay
 {
 
 
-	Window::WindowRegister Window::windowClass(L"WindowName");
 
 	Window::WindowRegister::WindowRegister(LPCWSTR className)
 	{
@@ -64,9 +63,9 @@ namespace stay
 		height = y;
 
 		DWORD dwExStyle = WS_EX_ACCEPTFILES | WS_EX_LEFT | WS_EX_NOINHERITLAYOUT | WS_EX_APPWINDOW;
-		hWnd = CreateWindowEx(
+		m_hWnd = CreateWindowEx(
 			dwExStyle,
-			windowClass.GetWindowClassName(),
+			GetWindowRegister().GetWindowClassName(),
 			windowName,
 			WS_OVERLAPPEDWINDOW,
 			100, 100,
@@ -77,24 +76,30 @@ namespace stay
 			reinterpret_cast<LPVOID>(this)
 		);
 
-		if (hWnd == nullptr)
+		if (m_hWnd == nullptr)
 		{
 			THROW_LASTEXCEPTION();
 		}
 
-		ShowWindow(hWnd, SW_SHOW);
+		ShowWindow(m_hWnd, SW_SHOW);
 	}
 
 	Window::~Window()
 	{
-		DestroyWindow(hWnd);
+		DestroyWindow(m_hWnd);
 	}
 
 	HWND Window::getHWnd() const noexcept
 	{
-		return hWnd;
+		return m_hWnd;
 	}
 
+
+	Window::WindowRegister& Window::GetWindowRegister()
+	{
+	    static WindowRegister windowClass(L"WindowName");
+		return windowClass;
+	}
 
 	LRESULT Window::WinProcBegin(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 	{
@@ -133,7 +138,7 @@ namespace stay
 		case WM_DESTROY:
 			PostQuitMessage(0);
 			break;
-		
+
 		default:
 			break;
 		}

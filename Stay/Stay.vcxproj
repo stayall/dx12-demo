@@ -173,6 +173,7 @@
     <ClCompile Include="Platform\Windows\App.cpp" />
     <ClCompile Include="Platform\Windows\CommandListManager.cpp" />
     <ClCompile Include="Platform\Windows\CommandQueueManager.cpp" />
+    <ClCompile Include="Platform\Windows\DescriptorHeap.cpp" />
     <ClCompile Include="Platform\Windows\Display.cpp" />
     <ClCompile Include="Platform\Windows\Exception.cpp" />
     <ClCompile Include="Platform\Windows\Graphics.cpp" />
@@ -194,6 +195,7 @@
     <ClInclude Include="Platform\Windows\CommandListManager.h" />
     <ClInclude Include="Platform\Windows\CommandQueueManager.h" />
     <ClInclude Include="Platform\Windows\d3dx12.h" />
+    <ClInclude Include="Platform\Windows\DescriptorHeap.h" />
     <ClInclude Include="Platform\Windows\Display.h" />
     <ClInclude Include="Platform\Windows\Exception.h" />
     <ClInclude Include="Platform\Windows\Graphics.h" />

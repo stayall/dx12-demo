@@ -31,18 +31,19 @@ namespace stay
 	{
 	public:
 		RootSignature(const wchar_t* name = L"Unamed Root Signature", D3D12_ROOT_SIGNATURE_FLAGS acceseFlag = s_FullAcceseFlags);
+		~RootSignature() { if (m_rootSignature != nullptr) m_rootSignature->Release(); }
+
 		static D3D12_FEATURE_DATA_ROOT_SIGNATURE CheckFeatureSupport();
 
 		void SetParametersSize(UINT numParaneters) { m_parameters.resize(numParaneters); }
-		void SetParameters(UINT numParaneters, RootSignatureParameter *parameters);
+		void SetParameters(UINT numParaneters, RootSignatureParameter* parameters);
 		void SetParamerter(UINT indexParameter, RootSignatureParameter parameters);
 		void AddParameter(RootSignatureParameter parameter) { m_parameters.push_back(parameter); }
 
 		RootSignatureParameter& operator[](size_t index) { assert(index < m_parameters.size()); return  m_parameters[index]; }
-
 		const RootSignatureParameter& operator[](size_t index) const { assert(index < m_parameters.size()); return  m_parameters[index]; }
-
-		void Finalize();
+		ID3D12RootSignature* GetRootSignature() { return m_rootSignature; }
+		void Finalize(ID3D12Device* device);
 	private:
 		static D3D12_ROOT_SIGNATURE_FLAGS s_FullAcceseFlags;
 

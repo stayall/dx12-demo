@@ -52,6 +52,7 @@ namespace stay
 	RootSignature::RootSignature(const wchar_t* name, D3D12_ROOT_SIGNATURE_FLAGS acceseFlag):
 		m_name(name)
 	{
+		ZeroMemory(&m_State, sizeof(m_State));
 		m_State.Flags = acceseFlag;
 		m_rootSignature = nullptr;
 		m_parameters.clear();
@@ -86,7 +87,7 @@ namespace stay
 		m_parameters[indexParater] = paraters;
 	}
 
-	void RootSignature::Finalize()
+	void RootSignature::Finalize(ID3D12Device* device)
 	{
 		ASSERT(m_rootSignature == nullptr);
 		m_State.NumParameters = (UINT)m_parameters.size();
@@ -111,8 +112,8 @@ namespace stay
 		ComPtr<ID3DBlob> signatrue;
 		ComPtr<ID3DBlob> error;
 		THROW_IF_FAILED(D3D12SerializeVersionedRootSignature(&versionRoot, signatrue.GetAddressOf(), error.GetAddressOf()));
-
-		THROW_IF_FAILED(Graphics::g_Device->CreateRootSignature(0, signatrue->GetBufferPointer(), signatrue->GetBufferSize(), IID_PPV_ARGS(&m_rootSignature)));
+		THROW_IF_FAILED(device->GetDeviceRemovedReason());
+		THROW_IF_FAILED(device->CreateRootSignature(0, signatrue->GetBufferPointer(), signatrue->GetBufferSize(), IID_PPV_ARGS(&m_rootSignature)));
 		m_rootSignature->SetName(m_name);
 	}
 }

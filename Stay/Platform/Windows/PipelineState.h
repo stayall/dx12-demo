@@ -11,6 +11,7 @@ namespace stay
 	{
 	public:
 		PSO(const wchar_t* name = L"Unnamed PSO") : m_name(name), m_rootSignature(nullptr), m_pipelineState(nullptr) {};
+		~PSO() { m_pipelineState->Release(); }
 
 		void SetRootSignature(RootSignature* rootSignature) { m_rootSignature = rootSignature; }
 		RootSignature* GetRootSignature() const { return m_rootSignature; }
@@ -23,9 +24,9 @@ namespace stay
 		ID3D12PipelineState* m_pipelineState = nullptr;
 	};
 
-	class GraphicsPSO : PSO
+	class GraphicsPSO : public PSO
 	{
-	private:
+	public:
 		GraphicsPSO(const wchar_t* name = L"Unnamed Graphics PSO");
 
 		void SetInputLayout(D3D12_INPUT_ELEMENT_DESC* inputLayouts, UINT size) { m_pipelineStateDesc.InputLayout = { inputLayouts, size }; }
@@ -43,9 +44,9 @@ namespace stay
 		void SetVertexShader(const D3D12_SHADER_BYTECODE &vs) { m_pipelineStateDesc.VS = vs; }
 		void SetPiexlShader(const D3D12_SHADER_BYTECODE &ps) { m_pipelineStateDesc.PS = ps; }
 
-		void Fnalize();
+		void Fnalize(ID3D12Device* device);
 
-	public:
+	private:
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC m_pipelineStateDesc;
 		
 	};
