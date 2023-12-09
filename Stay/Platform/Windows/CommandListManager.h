@@ -8,31 +8,29 @@
 namespace stay
 {
 
-class CommandAllocator;
-class GraphicsPSO;
-class ViewPort;
-class DescriptorHeap;
-class CommandQueue;
+	class CommandAllocator;
+	class GraphicsPSO;
+	class CommandQueue;
 
-class CommandList
-{
-	friend CommandQueue;
-public:
-	CommandList() = default;
-	~CommandList() { SAFE_RELEASE(m_commandList); }
+	class CommandList
+	{
+		friend CommandQueue;
+	public:
+		CommandList() = default;
+		~CommandList() { SAFE_RELEASE(m_commandList); }
 
-	D3D12_COMMAND_LIST_TYPE GetType() const { return m_commandList->GetType(); }
+		D3D12_COMMAND_LIST_TYPE GetType() const { return m_commandList->GetType(); }
 
-	void Create(ID3D12Device* device, const D3D12_COMMAND_LIST_TYPE commandListType, ID3D12CommandAllocator* commandAllco, GraphicsPSO* pipelineState = nullptr, UINT nodemask = 1);
-	//void Create(ID3D12Device* device, const D3D12_COMMAND_LIST_TYPE commandListType, ID3D12CommandAllocator* commandAllco, PSO* pipelineState = nullptr, UINT nodemask = 1);
+		void Create(ID3D12Device* device, const D3D12_COMMAND_LIST_TYPE commandListType, ID3D12CommandAllocator* commandAllco, GraphicsPSO* pipelineState = nullptr, UINT nodemask = 1);
+		//void Create(ID3D12Device* device, const D3D12_COMMAND_LIST_TYPE commandListType, ID3D12CommandAllocator* commandAllco, PSO* pipelineState = nullptr, UINT nodemask = 1);
 
-	ID3D12GraphicsCommandList* GetCommandList() const { return m_commandList; }
+		ID3D12GraphicsCommandList* GetCommandList() const { return m_commandList; }
 
 
-	
-private:
-	ID3D12GraphicsCommandList* m_commandList;
-};
+
+	private:
+		ID3D12GraphicsCommandList* m_commandList;
+	};
 
 }
 

@@ -48,47 +48,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	try
 	{
 		using Microsoft::WRL::ComPtr;
-
-#ifdef _DEBUG
-		{
-			D3D12_DEBUG_FEATURE debugFlag;
-			debugFlag |=
-				D3D12_DEBUG_FEATURE_ALLOW_BEHAVIOR_CHANGING_DEBUG_AIDS |
-				D3D12_DEBUG_FEATURE_CONSERVATIVE_RESOURCE_STATE_TRACKING |
-				D3D12_DEBUG_FEATURE_DISABLE_VIRTUALIZED_BUNDLES_VALIDATION;
-
-			ComPtr<ID3D12Debug> pDebug;
-			THROW_IF_FAILED(D3D12GetDebugInterface(IID_PPV_ARGS(pDebug.GetAddressOf())));
-			pDebug->EnableDebugLayer();
-
-
-		}
-
-#endif
-
-
-		ComPtr<IDXGIFactory4> pFactory;
-		{
-#ifdef _DEBUG
-
-			THROW_IF_FAILED(CreateDXGIFactory2(DXGI_CREATE_FACTORY_DEBUG, IID_PPV_ARGS(pFactory.GetAddressOf())));
-#else
-			THROW_IF_FAILED(CreateDXGIFactory2(0, IID_PPV_ARGS(pFactory.GetAddressOf())));
-#endif // _DEBUG
-
-		}
-
-		ComPtr<ID3D12Device> pDevice;
-		{
-
-			stay::Graphics::Initialize();
-			pDevice = stay::Graphics::g_Device;
-		}
+		stay::Graphics::Initialize();
 		Display::Initialize();
-
-
-
-		
 
 		stay::DescriptorHeap rtvDescriptorHeap{};
 		rtvDescriptorHeap.Create(Graphics::g_Device, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 2, D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
@@ -99,19 +60,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			for (UINT i = 0; i < 2; i++)
 			{
 				THROW_IF_FAILED(Display::g_SwapChain->GetBuffer(i, IID_PPV_ARGS(&renderTarget[i])));
-				pDevice->CreateRenderTargetView(renderTarget[i].Get(), nullptr, rtvDescriptorHeap.Allcoate(1));
+				Graphics::g_Device->CreateRenderTargetView(renderTarget[i].Get(), nullptr, rtvDescriptorHeap.Allcoate(1));
 			}
 		}
 
 
 		ComPtr<ID3D12CommandAllocator> pCommandAlloc;
 		{
-			THROW_IF_FAILED(pDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(pCommandAlloc.GetAddressOf())));
+			THROW_IF_FAILED(Graphics::g_Device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(pCommandAlloc.GetAddressOf())));
 		}
 
 		ComPtr<ID3D12CommandAllocator> pBundleCommandAlloc;
 		{
-			THROW_IF_FAILED(pDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_BUNDLE, IID_PPV_ARGS(pBundleCommandAlloc.GetAddressOf())));
+			THROW_IF_FAILED(Graphics::g_Device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_BUNDLE, IID_PPV_ARGS(pBundleCommandAlloc.GetAddressOf())));
 		}
 
 		stay::RootSignature rootSignature;
@@ -168,11 +129,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			pPiplelineState = pso.GetPipelineState();
 		}
 
-	
 
-		CommandList commandList;
-		Graphics::g_CommandManager.GetGraphicsQueue().CreateCommandList(D3D12_COMMAND_LIST_TYPE_DIRECT, &commandList);
-		auto pCommandList = commandList.GetCommandList();
+
+		ComPtr<ID3D12GraphicsCommandList> commandList;
+		ComPtr<ID3D12CommandAllocator> allocator;
+		Graphics::g_CommandManager.CreateCommandList(D3D12_COMMAND_LIST_TYPE_DIRECT, &commandList, &allocator, &pso);
+
 		//pCommandList->SetPipelineState(pso.GetPipelineState());
 		VertexData verticeData[]
 		{
@@ -203,7 +165,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 
 			THROW_IF_FAILED(
-				pDevice->CreateCommittedResource(&heapPro, D3D12_HEAP_FLAG_NONE, &rsDesc,
+				Graphics::g_Device->CreateCommittedResource(&heapPro, D3D12_HEAP_FLAG_NONE, &rsDesc,
 					D3D12_RESOURCE_STATE_GENERIC_READ,
 					nullptr, IID_PPV_ARGS(&verticeDataResource)));
 
@@ -222,7 +184,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		vertexBufferView.SizeInBytes = sizeof(verticeData);
 		vertexBufferView.StrideInBytes = sizeof(VertexData);
 
-	
+
 
 
 		stay::DescriptorHeap cbvDescriptorHeap;
@@ -245,7 +207,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			resDesc.SampleDesc.Count = 1;
 			resDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
 
-			THROW_IF_FAILED(pDevice->CreateCommittedResource(
+			THROW_IF_FAILED(Graphics::g_Device->CreateCommittedResource(
 				&cbvProp, D3D12_HEAP_FLAG_NONE,
 				&resDesc, D3D12_RESOURCE_STATE_GENERIC_READ,
 				nullptr, IID_PPV_ARGS(&cbvRes)));
@@ -262,11 +224,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			cbvDesc.SizeInBytes = sizeof(offset);
 
 
-			pDevice->CreateConstantBufferView(&cbvDesc, cbvDescriptorHeap.Allcoate(1));
+			Graphics::g_Device->CreateConstantBufferView(&cbvDesc, cbvDescriptorHeap.Allcoate(1));
 		}
 
 		ComPtr<ID3D12GraphicsCommandList> pBundleCommandList;
-		THROW_IF_FAILED(pDevice->CreateCommandList(
+		THROW_IF_FAILED(Graphics::g_Device->CreateCommandList(
 			0, D3D12_COMMAND_LIST_TYPE_BUNDLE,
 			pBundleCommandAlloc.Get(),
 			pPiplelineState.Get(),
@@ -283,8 +245,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 
 		UINT freamIndex = Display::g_SwapChain->GetCurrentBackBufferIndex();
-		stay::App app;
-		while (!app.CheckMessage())
+		
+		while (!Graphics::g_App->CheckMessage())
 		{
 
 			{
@@ -292,25 +254,25 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 				memcpy(pCbV, &offset, sizeof(offset));
 			}
 			{
-				THROW_IF_FAILED(pCommandAlloc.Reset());
-				THROW_IF_FAILED(pCommandList->Reset(pCommandAlloc.Get(), pPiplelineState.Get()));
+				allocator->Reset();
+				THROW_IF_FAILED(commandList->Reset(allocator.Get(), pPiplelineState.Get()));
 
 
-				pCommandList->SetGraphicsRootSignature(pRootSignatrue.Get());
+				commandList->SetGraphicsRootSignature(pRootSignatrue.Get());
 
 				D3D12_VIEWPORT viewPort{};
 				viewPort.Width = (float)width;
 				viewPort.Height = (float)height;
 				viewPort.MaxDepth = 1;
 				viewPort.MinDepth = 0;
-				pCommandList->RSSetViewports(1, &viewPort);
+				commandList->RSSetViewports(1, &viewPort);
 
 				D3D12_RECT rect = { 0, 0, width, height };
-				pCommandList->RSSetScissorRects(1, &rect);
+				commandList->RSSetScissorRects(1, &rect);
 
-				ID3D12DescriptorHeap* ppHeaps[] = { &cbvDescriptorHeap.GetDescriptorHeap()};
-				pCommandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
-				pCommandList->SetGraphicsRootDescriptorTable(0, cbvDescriptorHeap.RetrieveAddress(0));
+				ID3D12DescriptorHeap* ppHeaps[] = { &cbvDescriptorHeap.GetDescriptorHeap() };
+				commandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
+				commandList->SetGraphicsRootDescriptorTable(0, cbvDescriptorHeap.RetrieveAddress(0));
 
 				D3D12_RESOURCE_TRANSITION_BARRIER transitionBarrier{};
 				transitionBarrier.pResource = renderTarget[freamIndex].Get();
@@ -321,17 +283,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 				rtvBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
 				rtvBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
 				rtvBarrier.Transition = transitionBarrier;
-				pCommandList->ResourceBarrier(1, &rtvBarrier);
+				commandList->ResourceBarrier(1, &rtvBarrier);
 
 
 				auto handle = (D3D12_CPU_DESCRIPTOR_HANDLE)rtvDescriptorHeap.RetrieveAddress(freamIndex);
-				pCommandList->OMSetRenderTargets(1, &handle, FALSE, nullptr);
+				commandList->OMSetRenderTargets(1, &handle, FALSE, nullptr);
 
 
 				FLOAT clearColor[] = { 0.0f, 0.2f, 0.4f, 1.0f };
-				pCommandList->ClearRenderTargetView(rtvDescriptorHeap.RetrieveAddress(freamIndex), clearColor, 0, nullptr);
+				commandList->ClearRenderTargetView(rtvDescriptorHeap.RetrieveAddress(freamIndex), clearColor, 0, nullptr);
 
-				pCommandList->ExecuteBundle(pBundleCommandList.Get());
+				commandList->ExecuteBundle(pBundleCommandList.Get());
 
 				transitionBarrier.pResource = renderTarget[freamIndex].Get();
 				transitionBarrier.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
@@ -341,13 +303,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 				rtvBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
 				rtvBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
 				rtvBarrier.Transition = transitionBarrier;
-				pCommandList->ResourceBarrier(1, &rtvBarrier);
+				commandList->ResourceBarrier(1, &rtvBarrier);
 
 
-				THROW_IF_FAILED(pCommandList->Close());
 			}
-			auto pCommandQueue = Graphics::g_CommandManager.GetGraphicsQueue();
-			CommandList cls[] = { commandList };
+			auto &pCommandQueue = Graphics::g_CommandManager.GetGraphicsQueue();
+			ID3D12CommandList* cls[] = { commandList.Get() };
 			pCommandQueue.ExecuteCommandLists(_countof(cls), cls);
 			THROW_IF_FAILED(Display::g_SwapChain->Present(1, 0));
 
@@ -355,14 +316,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 			freamIndex = Display::g_SwapChain->GetCurrentBackBufferIndex();
 		}
-	}
+		}
 	catch (const stay::Exception& e)
 	{
 		MessageBoxA(nullptr, e.what(), e.getType(), 0);
 		OutputDebugStringA(e.what());
 	}
 	return 0;
-}
+	}
 
 
 

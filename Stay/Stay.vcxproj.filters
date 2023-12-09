@@ -48,9 +48,6 @@
     <ClCompile Include="Platform\Windows\Display.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Platform\Windows\Graphics.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Platform\Windows\GraphicsCore.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -111,9 +108,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Platform\Windows\Display.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Platform\Windows\Graphics.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Platform\Windows\GraphicsCore.h">

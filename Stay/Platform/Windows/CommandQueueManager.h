@@ -8,7 +8,8 @@
 
 namespace stay
 {
-
+	class CommandAllocator;
+	class GraphicsPSO;
 	class CommandList;
 
 	class CommandQueue
@@ -22,10 +23,12 @@ namespace stay
 		bool IsComplete(UINT64 fenceValue);
 		void WaitForFence(UINT64 fenceValue);
 		void WaitLastComplate();
-		void ExecuteCommandList(ID3D12CommandList* commandList);
-		void ExecuteCommandLists(UINT numCommandLists, ID3D12CommandList* commandLists);
 
-		void CreateCommandList(const D3D12_COMMAND_LIST_TYPE commandListType, CommandList* commandList);
+		ID3D12CommandAllocator* RequierCommandListAllocator();
+		void DiscardCommandListAllocator(ID3D12CommandAllocator* allocator);
+		void ExecuteCommandList(ID3D12CommandList* const commandList);
+		void ExecuteCommandLists(UINT numCommandLists, ID3D12CommandList* const *commandLists);
+
 		void ShutDown();
 
 		ID3D12CommandQueue* GetCommandQueue() const { return m_commandQueue; }
@@ -54,9 +57,14 @@ namespace stay
 
 		void Finalize();
 
+		void CreateCommandList(const D3D12_COMMAND_LIST_TYPE commandListType, ID3D12GraphicsCommandList** commandList, ID3D12CommandAllocator** allocator, GraphicsPSO* pso = nullptr, UINT nodeMask = 1);
+
 		CommandQueue& GetGraphicsQueue() { return m_graphicsQueue; };
 	private:
+		ID3D12CommandAllocator* GetAllocator(const D3D12_COMMAND_LIST_TYPE commandListType);
+	private:
 		CommandQueue m_graphicsQueue;
+		ID3D12Device* m_device;
 	};
 
 }

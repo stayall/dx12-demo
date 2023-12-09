@@ -61,10 +61,13 @@ namespace stay::Graphics
 #ifdef _DEBUG
 			{
 				ComPtr<ID3D12InfoQueue> InfoQueue;
-				THROW_IF_FAILED(pDevice->QueryInterface(IID_PPV_ARGS(&InfoQueue)));
-				InfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, true);
-				InfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, true);
-				InfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, false);
+				if (pDevice->QueryInterface(IID_PPV_ARGS(&InfoQueue)) == S_OK)
+				{
+
+					InfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, true);
+					InfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, true);
+					InfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, false);
+				}
 			}
 #endif // _DEBUG
 

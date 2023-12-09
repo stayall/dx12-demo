@@ -1,5 +1,6 @@
 #include <vector>
 #include "WinStd.h"
+#include "PipelineState.h"
 #include "CommandQueueManager.h"
 #include "CommandListManager.h"
 
@@ -47,6 +48,17 @@ namespace stay
 		WaitForFence(--m_nextFenceValue);
 	}
 
+	ID3D12CommandAllocator* CommandQueue::RequierCommandListAllocator()
+	{
+
+		return m_allocatorPool.AllocateCommandAllocator(m_fence->GetCompletedValue());
+	}
+
+	void CommandQueue::DiscardCommandListAllocator(ID3D12CommandAllocator* allocator)
+	{
+		m_allocatorPool.DeallocateCommandAllocator(m_fence->GetCompletedValue(), allocator);
+	}
+
 	void CommandQueue::Create(ID3D12Device* device, D3D12_COMMAND_LIST_TYPE type)
 	{
 		ASSERT(device != nullptr);
@@ -66,34 +78,32 @@ namespace stay
 
 
 
-	void CommandQueue::CreateCommandList(const D3D12_COMMAND_LIST_TYPE commandListType, CommandList* commandList)
-	{
-		ASSERT(commandList != nullptr && (commandListType == m_type || commandListType == D3D12_COMMAND_LIST_TYPE_BUNDLE));
-		auto allcator = m_allocatorPool.AllocateCommandAllocator(m_fence->GetCompletedValue());
-		commandList->Create(m_device, commandListType, allcator);
 
-	}
 
 
 
 	void CommandQueue::ShutDown()
 	{
-		m_commandQueue->Release();
-		CloseHandle(m_fenceEvent);
-
+		if (CloseHandle(m_fenceEvent) == 0)
+		{
+			THROW_LASTEXCEPTION();
+		}
+		SAFE_RELEASE(m_commandQueue);
 	}
 
-	void CommandQueue::ExecuteCommandList(ID3D12CommandList* commandList)
+	void CommandQueue::ExecuteCommandList(ID3D12CommandList* const commandList)
 	{
-		ExecuteCommandLists(1u, commandList);
+		ExecuteCommandLists(1u, &commandList);
 	}
 
-	void CommandQueue::ExecuteCommandLists(UINT numCommandLists, ID3D12CommandList* commandLists)
+	void CommandQueue::ExecuteCommandLists(UINT numCommandLists, ID3D12CommandList* const *commandLists)
 	{
+		ID3D12CommandList* lists[sc_NumMaxExcuteCommandList] = {};
+
 		for (size_t i = 0; i < numCommandLists; i++)
 		{
-			ASSERT(commandLists->GetType() == m_type && SUCCEEDED(commandLists[i].));
-			lists[i] = commandLists[i].m_commandList;
+			ASSERT(commandLists[i]->GetType() == m_type && SUCCEEDED(static_cast<ID3D12GraphicsCommandList*>(commandLists[i])->Close()));
+			lists[i] = commandLists[i];
 		}
 
 		m_commandQueue->ExecuteCommandLists(numCommandLists, lists);
@@ -107,9 +117,41 @@ namespace stay
 
 	void CommandQueueManager::Initialize(ID3D12Device* device)
 	{
+		ASSERT(device != nullptr);
+		m_device = device;
 		m_graphicsQueue.Create(device, D3D12_COMMAND_LIST_TYPE_DIRECT);
 	}
 
+	ID3D12CommandAllocator* CommandQueueManager::GetAllocator(const D3D12_COMMAND_LIST_TYPE commandListType)
+	{
+		ID3D12CommandAllocator* allocator = nullptr;
+		switch (commandListType)
+		{
+		case D3D12_COMMAND_LIST_TYPE_DIRECT:
+		case D3D12_COMMAND_LIST_TYPE_BUNDLE: allocator = m_graphicsQueue.RequierCommandListAllocator();
+		default:
+			break;
+		}
+
+		return allocator;
+	}
+
+	void  CommandQueueManager::CreateCommandList(const D3D12_COMMAND_LIST_TYPE commandListType, ID3D12GraphicsCommandList** commandList, ID3D12CommandAllocator** allocator, GraphicsPSO* pso, UINT nodeMask)
+	{
+		*allocator = GetAllocator(commandListType);
+		ASSERT(allocator != nullptr);
+
+		if (pso != nullptr)
+		{
+			m_device->CreateCommandList(nodeMask, commandListType, *allocator, pso->GetPipelineState(), IID_PPV_ARGS(commandList));
+		}
+		else
+		{
+			m_device->CreateCommandList(nodeMask, commandListType, *allocator, nullptr, IID_PPV_ARGS(commandList));
+		}
+
+		THROW_IF_FAILED((*commandList)->Close());
+	}
 
 
 	void CommandQueueManager::Finalize()

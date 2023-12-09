@@ -36,7 +36,7 @@ ID3D12CommandAllocator* CommandAllocatorPool::AllocateCommandAllocator(UINT64 fe
 
 	if (!m_readyCommandAllocator.empty())
 	{
-		auto front = m_readyCommandAllocator.front();
+		auto& front = m_readyCommandAllocator.front();
 		if (front.first <= fenceValue)
 		{
 			commandAllocator = front.second;
