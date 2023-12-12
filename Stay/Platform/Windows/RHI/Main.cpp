@@ -109,8 +109,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			ComPtr<ID3DBlob> error;
 
 
-			THROW_IF_FAILED(D3DReadFileToBlob(L"CompiledShaders/VSshaders.cso", &vertexShdaer));
-			THROW_IF_FAILED(D3DReadFileToBlob(L"CompiledShaders/PSshaders.cso", &piexlShader));
+			THROW_IF_FAILED(D3DReadFileToBlob(L"../CompiledShaders/VSshaders.cso", &vertexShdaer));
+			THROW_IF_FAILED(D3DReadFileToBlob(L"../CompiledShaders/PSshaders.cso", &piexlShader));
 			pso.SetVertexShader({ vertexShdaer->GetBufferPointer(), vertexShdaer->GetBufferSize() });
 			pso.SetPiexlShader({ piexlShader->GetBufferPointer(), piexlShader->GetBufferSize() });
 
