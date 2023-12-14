@@ -1,5 +1,5 @@
 #include "Display.h"
-#include "WinError.h"
+#include "../WinError.h"
 #include "GraphicsCore.h"
 
 

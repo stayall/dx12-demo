@@ -1,6 +1,6 @@
 #pragma once
 
-#include "WinStd.h"
+#include "../WinStd.h"
 
 
 namespace stay

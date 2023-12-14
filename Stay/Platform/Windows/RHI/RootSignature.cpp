@@ -1,6 +1,6 @@
 #include "RootSignature.h"
 
-#include "WinError.h"
+#include "../WinError.h"
 #include "GraphicsCore.h"
 
 namespace stay

@@ -1,5 +1,5 @@
-#include "WinError.h"
-#include "WinStd.h"
+#include "../WinError.h"
+#include "../WinStd.h"
 
 #include "App.h"
 

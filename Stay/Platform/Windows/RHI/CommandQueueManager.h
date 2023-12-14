@@ -1,8 +1,8 @@
 #ifndef _STAY_COMMAND_MANAGER_H_
 #define _STAY_COMMAND_MANAGER_H_
 
-#include "WinStd.h"
-#include "WinError.h"
+#include "../WinStd.h"
+#include "../WinError.h"
 
 #include "CommandListManager.h"
 

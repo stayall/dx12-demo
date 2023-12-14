@@ -1,5 +1,5 @@
 #include "Window.h"
-#include "WinError.h"
+#include "../WinError.h"
 #include "Resource/resource1.h"
 
 namespace stay

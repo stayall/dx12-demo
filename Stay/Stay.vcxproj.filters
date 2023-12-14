@@ -36,7 +36,7 @@
     <ClCompile Include="Platform\Windows\RHI\Display.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Platform\Windows\RHI\Exception.cpp">
+    <ClCompile Include="Platform\Windows\Exception.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Platform\Windows\RHI\GraphicsCore.cpp">
@@ -51,13 +51,16 @@
     <ClCompile Include="Platform\Windows\RHI\Window.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Platform\Windows\RHI\WinError.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Platform\Windows\RHI\WinHelper.cpp">
+    <ClCompile Include="Platform\Windows\WinHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FreamWork\Common\main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\Windows\File\APCIO.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\Windows\WinError.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -95,7 +98,7 @@
     <ClInclude Include="Platform\Windows\RHI\Display.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Platform\Windows\RHI\Exception.h">
+    <ClInclude Include="Platform\Windows\Exception.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Platform\Windows\RHI\GraphicsCore.h">
@@ -113,13 +116,19 @@
     <ClInclude Include="Platform\Windows\RHI\Window.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Platform\Windows\RHI\WinError.h">
+    <ClInclude Include="Platform\Windows\WinHelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Platform\Windows\RHI\WinHelper.h">
+    <ClInclude Include="Platform\Windows\WinStd.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Platform\Windows\RHI\WinStd.h">
+    <ClInclude Include="Platform\Windows\File\APCIO.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\Windows\WinError.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\Windows\File\WinError.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

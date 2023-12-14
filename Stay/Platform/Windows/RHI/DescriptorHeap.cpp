@@ -1,6 +1,6 @@
 #include "DescriptorHeap.h"
 #include "GraphicsCore.h"
-#include "WinError.h"
+#include "../WinError.h"
 namespace stay
 {
 	void DescriptorHeap::Create(ID3D12Device* device, D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, D3D12_DESCRIPTOR_HEAP_FLAGS flags, UINT nodeMask)

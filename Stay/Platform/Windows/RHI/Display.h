@@ -1,7 +1,7 @@
 #pragma once
 
 #include "App.h"
-#include "WinStd.h"
+#include "../WinStd.h"
 
 namespace stay::Display
 {

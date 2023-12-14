@@ -1,5 +1,5 @@
 #include <vector>
-#include "WinStd.h"
+#include "../WinStd.h"
 #include "PipelineState.h"
 #include "CommandQueueManager.h"
 #include "CommandListManager.h"
