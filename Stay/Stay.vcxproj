@@ -86,6 +86,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>Platform/;Core/</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -103,6 +104,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>Platform/;Core/</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -132,6 +134,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <SupportJustMyCode>false</SupportJustMyCode>
+      <AdditionalIncludeDirectories>Platform/;Core/</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -159,6 +162,7 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FloatingPointModel>Fast</FloatingPointModel>
+      <AdditionalIncludeDirectories>Platform/;Core/</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -175,6 +179,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="FreamWork\Common\BaseApplication.cpp" />
+    <ClCompile Include="FreamWork\Common\main.cpp" />
     <ClCompile Include="FreamWork\Empty\EmptyApplication.h" />
     <ClCompile Include="Platform\Windows\RHI\App.cpp" />
     <ClCompile Include="Platform\Windows\RHI\CommandListManager.cpp" />
@@ -183,7 +188,6 @@
     <ClCompile Include="Platform\Windows\RHI\Display.cpp" />
     <ClCompile Include="Platform\Windows\RHI\Exception.cpp" />
     <ClCompile Include="Platform\Windows\RHI\GraphicsCore.cpp" />
-    <ClCompile Include="Platform\Windows\RHI\Main.cpp" />
     <ClCompile Include="Platform\Windows\RHI\PipelineState.cpp" />
     <ClCompile Include="Platform\Windows\RHI\RootSignature.cpp" />
     <ClCompile Include="Platform\Windows\RHI\Window.cpp" />

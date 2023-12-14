@@ -1,6 +1,6 @@
 #include <iostream>
 
-
+#include "Windows/RHI/WinStd.h"
 #include "../Common/BaseApplication.h"
 
 namespace stay
@@ -9,7 +9,8 @@ namespace stay
 }
 
 
-int main(int argc, char** argv)
+_Use_decl_annotations_
+int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
 	if (stay::g_pApp->initialize() != 0)
 	{
@@ -22,4 +23,5 @@ int main(int argc, char** argv)
 		stay::g_pApp->Tick();
 	}
 	
+	return 0;
 }
