@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../win.h"
+#include "../WinStd.h"
 #include <fstream>
 
 namespace stay::File
@@ -13,22 +13,37 @@ namespace stay::File
 		RWFile = GENERIC_READ | GENERIC_WRITE
 	};
 
-	class AsycnIOStream
+	class IOStreamBase
 	{
 	public:
-		AsycnIOStream() { m_overlappen = {}; };
-		virtual ~AsycnIOStream() = default;
+		IOStreamBase();
+	
+		virtual ~IOStreamBase();
 
-		virtual DWORD AsycnRead() {};
-		virtual DWORD AsycnWrite() {};
+		virtual DWORD AsycnRead(void* buffer, DWORD size) = 0;
+		virtual DWORD AsycnWrite() = 0;
 		DWORD GetFileSize();
 		void Flush();
 		void Cancel();
 
 	protected:
+		FileAcceseType m_acceseType;
+		std::wstring m_filePath;
 		OVERLAPPED m_overlappen;
-
+		uint8_t* m_buffer;
 		HANDLE m_file;
+		HANDLE m_wait;
+	};
+
+	class APCIOSteam : public IOStreamBase
+	{
+		APCIOSteam() = default;
+		APCIOSteam(LPCWSTR fileName, DWORD accese = FileAcceseType::RWFile, DWORD shareMode = FILE_SHARE_READ | FILE_SHARE_DELETE, DWORD createoption = CREATE_NEW);
+
+		virtual ~APCIOSteam() = default;
+
+		virtual DWORD AsycnRead(void* buffer, DWORD size);
+		virtual DWORD AsycnWrite() {};
 	};
 
 }
