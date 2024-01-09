@@ -5,7 +5,7 @@
 
 namespace stay
 {
-	class IRuntionMoudle : public IUnkown
+	class IRuntimeMoudle : public IUnkown
 	{
 	public:
 		virtual int initialize() = 0;
@@ -13,7 +13,7 @@ namespace stay
 
 		virtual void Tick() = 0;
 
-		virtual ~IRuntionMoudle() = default;
+		virtual ~IRuntimeMoudle() = default;
 	};
 }
 

@@ -1,6 +1,13 @@
 #ifndef _STAY_BASE_APPLICATION_H_
 #define _STAY_BASE_APPLICATION_H_
+#include <vector>
+#include <memory>
+
 #include "../Interface/IApplication.h"
+#include "../Interface/IRuntimeModule.h"
+
+
+class GraphicsModule;
 
 namespace stay
 {
@@ -16,6 +23,8 @@ namespace stay
 
 	protected:
 		bool m_bQuit = false;
+
+		std::vector<std::unique_ptr<IRuntimeMoudle>> m_modules;
 	};
 }
 

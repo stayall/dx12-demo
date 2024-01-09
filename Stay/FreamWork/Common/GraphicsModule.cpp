@@ -1,6 +1,7 @@
 #include "GraphicsModule.h"
 
 #include "Platform/Windows/RHI/Display.h"
+#include "Platform/Windows/RHI/GraphicsCore.h"
 
 namespace stay::GameCore
 {

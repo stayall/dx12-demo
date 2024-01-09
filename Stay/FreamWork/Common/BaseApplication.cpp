@@ -1,31 +1,51 @@
+#include <optional>
+
 #include "BaseApplication.h"
 
-#include "Windows/RHI/GraphicsCore.h"
+#include "GraphicsModule.h"
+#include "Platform/Windows/RHI/GraphicsCore.h"
 
-int stay::BaseApplication::initialize()
+
+namespace stay
 {
-    m_bQuit = false;
-    Graphics::Initialize();
 
-    return 0;
-}
+	int BaseApplication::initialize()
+	{
+		m_bQuit = false;
+		auto graphicsModule = std::make_unique<GameCore::GraphicsModule>();
+		graphicsModule->initialize();
+		m_modules.emplace_back(std::move(graphicsModule));
 
-void stay::BaseApplication::Tick()
-{
-    std::optional<int> result = Graphics::g_App->CheckMessage();
-    if (result.has_value())
-    {
-        m_bQuit = true;
-    }
+		return 0;
+	}
 
-}
+	void BaseApplication::Tick()
+	{
+		std::optional<int> result = Graphics::g_App->CheckMessage();
+		if (result.has_value())
+		{
+			m_bQuit = true;
+		}
 
-void stay::BaseApplication::finalize()
-{
-    Graphics::Finalize();
-}
+		for (auto& module : m_modules)
+		{
+			module->Tick();
+		}
+		
+	}
 
-bool stay::BaseApplication::isQuit() noexcept
-{
-    return false;
+	void BaseApplication::finalize()
+	{
+		size_t len = m_modules.size();
+
+		for (size_t i = len; i >= 0; i--)
+		{
+			m_modules[i]->finalize();
+		}
+	}
+
+	bool BaseApplication::isQuit() noexcept
+	{
+		return false;
+	}
 }

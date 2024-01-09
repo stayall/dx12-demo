@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "Windows/WinStd.h"
+#include "Platform/Windows/WinStd.h"
 #include "../Common/BaseApplication.h"
 
 namespace stay

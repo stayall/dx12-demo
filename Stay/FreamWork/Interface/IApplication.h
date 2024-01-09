@@ -5,7 +5,7 @@
 
 namespace stay
 {
-	class IApplication : public IRuntionMoudle
+	class IApplication : public IRuntimeMoudle
 	{
 	public:
 		virtual int initialize() = 0;
