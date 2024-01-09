@@ -13,6 +13,7 @@ namespace stay::Graphics
 	ID3D12Device* g_Device;
 	App* g_App;
 	CommandQueueManager g_CommandManager;
+	CommandListManager g_CommandListManager;
 
 	void GetHardwareAdapter(
 		IDXGIFactory1* pFactory,
