@@ -11,7 +11,7 @@ namespace stay
 	{
 	public:
 		PSO(const wchar_t* name = L"Unnamed PSO") : m_name(name), m_rootSignature(nullptr), m_pipelineState(nullptr) {};
-		~PSO() { m_pipelineState->Release(); }
+		~PSO() { SAFE_RELEASE(m_pipelineState); }
 
 		void SetRootSignature(RootSignature* rootSignature) { m_rootSignature = rootSignature; }
 		RootSignature* GetRootSignature() const { return m_rootSignature; }
