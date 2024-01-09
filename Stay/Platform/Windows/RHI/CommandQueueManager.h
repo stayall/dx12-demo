@@ -1,5 +1,4 @@
-#ifndef _STAY_COMMAND_MANAGER_H_
-#define _STAY_COMMAND_MANAGER_H_
+#pragma once
 
 #include "../WinStd.h"
 #include "../WinError.h"
@@ -8,7 +7,7 @@
 
 namespace stay
 {
-	class CommandAllocator;
+	
 	class GraphicsPSO;
 	class CommandList;
 
@@ -25,9 +24,9 @@ namespace stay
 		void WaitLastComplate();
 
 		ID3D12CommandAllocator* RequierCommandListAllocator();
-		void DiscardCommandListAllocator(ID3D12CommandAllocator* allocator);
-		void ExecuteCommandList(ID3D12CommandList* const commandList);
-		void ExecuteCommandLists(UINT numCommandLists, ID3D12CommandList* const *commandLists);
+		void DiscardCommandListAllocator(UINT64 fenceValue, ID3D12CommandAllocator* allocator);
+		UINT64 ExecuteCommandList(ID3D12CommandList* const commandList);
+		UINT64 ExecuteCommandLists(UINT numCommandLists, ID3D12CommandList* const *commandLists);
 
 		void ShutDown();
 
@@ -58,18 +57,17 @@ namespace stay
 		void Finalize();
 
 		void CreateCommandList(const D3D12_COMMAND_LIST_TYPE commandListType, ID3D12GraphicsCommandList** commandList, ID3D12CommandAllocator** allocator, GraphicsPSO* pso = nullptr, UINT nodeMask = 1);
-
-		CommandQueue& GetGraphicsQueue() { return m_graphicsQueue; };
+		CommandQueue& GetQueue(D3D12_COMMAND_LIST_TYPE commandQueueType);
+		CommandQueue& GetGraphicsQueue() { return m_graphicsQueue; }
+		void WaitForFence(const D3D12_COMMAND_LIST_TYPE commandListType, UINT64 fenceValue);
 	private:
 		ID3D12CommandAllocator* GetAllocator(const D3D12_COMMAND_LIST_TYPE commandListType);
 	private:
 		CommandQueue m_graphicsQueue;
+		CommandQueue m_computeQueue;
 		ID3D12Device* m_device;
 	};
 
 }
 
-
-
-#endif // !_STAY_COMMAND_MANAGER_H_
 

@@ -54,9 +54,9 @@ namespace stay
 		return m_allocatorPool.AllocateCommandAllocator(m_fence->GetCompletedValue());
 	}
 
-	void CommandQueue::DiscardCommandListAllocator(ID3D12CommandAllocator* allocator)
+	void CommandQueue::DiscardCommandListAllocator(UINT64 fenceValue, ID3D12CommandAllocator* allocator)
 	{
-		m_allocatorPool.DeallocateCommandAllocator(m_fence->GetCompletedValue(), allocator);
+		m_allocatorPool.DeallocateCommandAllocator(fenceValue, allocator);
 	}
 
 	void CommandQueue::Create(ID3D12Device* device, D3D12_COMMAND_LIST_TYPE type)
@@ -84,19 +84,19 @@ namespace stay
 
 	void CommandQueue::ShutDown()
 	{
-		if (CloseHandle(m_fenceEvent) == 0)
+		if (m_fenceEvent != nullptr && CloseHandle(m_fenceEvent) == 0)
 		{
 			THROW_LASTEXCEPTION();
 		}
 		SAFE_RELEASE(m_commandQueue);
 	}
 
-	void CommandQueue::ExecuteCommandList(ID3D12CommandList* const commandList)
+	UINT64 CommandQueue::ExecuteCommandList(ID3D12CommandList* const commandList)
 	{
-		ExecuteCommandLists(1u, &commandList);
+		return ExecuteCommandLists(1u, &commandList);
 	}
 
-	void CommandQueue::ExecuteCommandLists(UINT numCommandLists, ID3D12CommandList* const *commandLists)
+	UINT64 CommandQueue::ExecuteCommandLists(UINT numCommandLists, ID3D12CommandList* const* commandLists)
 	{
 		ID3D12CommandList* lists[sc_NumMaxExcuteCommandList] = {};
 
@@ -110,7 +110,7 @@ namespace stay
 
 		m_commandQueue->Signal(m_fence, m_nextFenceValue);
 
-		m_nextFenceValue++;
+		return m_nextFenceValue++;
 	}
 
 
@@ -129,8 +129,7 @@ namespace stay
 		{
 		case D3D12_COMMAND_LIST_TYPE_DIRECT:
 		case D3D12_COMMAND_LIST_TYPE_BUNDLE: allocator = m_graphicsQueue.RequierCommandListAllocator();
-		default:
-			break;
+
 		}
 
 		return allocator;
@@ -151,6 +150,28 @@ namespace stay
 		}
 
 		THROW_IF_FAILED((*commandList)->Close());
+	}
+
+	CommandQueue& CommandQueueManager::GetQueue(D3D12_COMMAND_LIST_TYPE commandQueueType)
+	{
+		switch (commandQueueType)
+		{
+		case D3D12_COMMAND_LIST_TYPE_DIRECT:
+			return m_graphicsQueue;
+			break;
+		case D3D12_COMMAND_LIST_TYPE_COMPUTE:
+			return m_computeQueue;
+			break;
+		default:
+			return m_graphicsQueue;
+			break;
+		}
+	}
+
+	void CommandQueueManager::WaitForFence(const D3D12_COMMAND_LIST_TYPE commandListType, UINT64 fenceValue)
+	{
+		ASSERT(commandListType != D3D12_COMMAND_LIST_TYPE_BUNDLE);
+		GetQueue(commandListType).WaitForFence(fenceValue);
 	}
 
 
