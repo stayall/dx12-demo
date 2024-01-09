@@ -1,13 +1,13 @@
 #include <iostream>
 
-#include "WinStd.h"
+#include "../WinStd.h"
 #include "Window.h"
-#include "WinError.h"
-#include "WinHelper.h"
+
+#include "../WinHelper.h"
 #include "App.h"
 
 
-#include "ClassAttribute.h"
+#include "../ClassAttribute.h"
 
 #include "d3dx12.h"
 
@@ -16,8 +16,8 @@
 #include "RootSignature.h"
 #include "PipelineState.h"
 #include "DescriptorHeap.h"
-#include "CommandQueueManager.h"
-#include "CommandListManager.h"
+
+#include "GPUResoures.h"
 
 namespace dx = DirectX;
 
@@ -76,7 +76,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		}
 
 		stay::RootSignature rootSignature;
-		ComPtr<ID3D12RootSignature> pRootSignatrue;
 		{
 			D3D12_DESCRIPTOR_RANGE1 dcrpRange[1];
 			dcrpRange->RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
@@ -94,12 +93,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			rootSignature.AddParameter(parameters);
 			rootSignature.Finalize(Graphics::g_Device);
 
-			pRootSignatrue = rootSignature.GetRootSignature();
 
 		}
 
 		stay::GraphicsPSO pso;
-		ComPtr<ID3D12PipelineState> pPiplelineState;
 		{
 
 			pso.SetRootSignature(&rootSignature);
@@ -126,14 +123,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			pso.SetRenderTarget(DXGI_FORMAT_R8G8B8A8_UNORM);
 			pso.Fnalize(Graphics::g_Device);
 
-			pPiplelineState = pso.GetPipelineState();
 		}
 
 
 
-		ComPtr<ID3D12GraphicsCommandList> commandList;
-		ComPtr<ID3D12CommandAllocator> allocator;
-		Graphics::g_CommandManager.CreateCommandList(D3D12_COMMAND_LIST_TYPE_DIRECT, &commandList, &allocator, &pso);
+		auto commandList = stay::GraphicsCommandList::Begin();
 
 		//pCommandList->SetPipelineState(pso.GetPipelineState());
 		VertexData verticeData[]
@@ -143,47 +137,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			{ { -0.25f, -0.25f , 0.0f }, { 0.0f, 0.0f, 1.0f, 1.0f } }
 		};
 
-		ComPtr<ID3D12Resource> verticeDataResource;
-		{
-			D3D12_HEAP_PROPERTIES heapPro{};
-			heapPro.Type = D3D12_HEAP_TYPE_UPLOAD;
-			heapPro.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
-			heapPro.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
+		stay::UploadBuffer verticeDataRs;
+		verticeDataRs.Create(L"Traingle Vertice Data", sizeof(verticeData), &verticeData);
 
 
-			D3D12_RESOURCE_DESC rsDesc{};
-			rsDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-			rsDesc.Alignment = 0;
-			rsDesc.Width = sizeof(verticeData);
-			rsDesc.Height = 1;
-			rsDesc.DepthOrArraySize = 1;
-			rsDesc.MipLevels = 1;
-			rsDesc.Format = DXGI_FORMAT_UNKNOWN;
-			rsDesc.SampleDesc.Count = 1;
-			rsDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-
-
-
-			THROW_IF_FAILED(
-				Graphics::g_Device->CreateCommittedResource(&heapPro, D3D12_HEAP_FLAG_NONE, &rsDesc,
-					D3D12_RESOURCE_STATE_GENERIC_READ,
-					nullptr, IID_PPV_ARGS(&verticeDataResource)));
-
-			UINT8* pVertexData;
-			D3D12_RANGE range{};
-			THROW_IF_FAILED(verticeDataResource->Map(0, &range, reinterpret_cast<void**>(&pVertexData)));
-			memcpy(pVertexData, reinterpret_cast<void*>(verticeData), sizeof(verticeData));
-			verticeDataResource->Unmap(0, nullptr);
-
-
-
-		}
 
 		D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
-		vertexBufferView.BufferLocation = verticeDataResource->GetGPUVirtualAddress();
+		vertexBufferView.BufferLocation = verticeDataRs.GetGPUVirtualAddress();
 		vertexBufferView.SizeInBytes = sizeof(verticeData);
 		vertexBufferView.StrideInBytes = sizeof(VertexData);
-
 
 
 
@@ -231,10 +193,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		THROW_IF_FAILED(Graphics::g_Device->CreateCommandList(
 			0, D3D12_COMMAND_LIST_TYPE_BUNDLE,
 			pBundleCommandAlloc.Get(),
-			pPiplelineState.Get(),
+			pso.GetPipelineState(),
 			IID_PPV_ARGS(&pBundleCommandList)));
 		{
-			pBundleCommandList->SetGraphicsRootSignature(pRootSignatrue.Get());
+			pBundleCommandList->SetGraphicsRootSignature(rootSignature.GetRootSignature());
 			pBundleCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 			pBundleCommandList->IASetVertexBuffers(0, 1, &vertexBufferView);
 			pBundleCommandList->DrawInstanced(3, 1, 0, 0);
@@ -245,7 +207,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 
 		UINT freamIndex = Display::g_SwapChain->GetCurrentBackBufferIndex();
-		
+
 		while (!Graphics::g_App->CheckMessage())
 		{
 
@@ -254,61 +216,44 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 				memcpy(pCbV, &offset, sizeof(offset));
 			}
 			{
-				allocator->Reset();
-				THROW_IF_FAILED(commandList->Reset(allocator.Get(), pPiplelineState.Get()));
 
-
-				commandList->SetGraphicsRootSignature(pRootSignatrue.Get());
+				commandList->Reset(&pso);
+				commandList->SetGraphicsRootSignature(rootSignature);
 
 				D3D12_VIEWPORT viewPort{};
 				viewPort.Width = (float)width;
 				viewPort.Height = (float)height;
 				viewPort.MaxDepth = 1;
 				viewPort.MinDepth = 0;
-				commandList->RSSetViewports(1, &viewPort);
+				commandList->SetViewport(viewPort);
 
 				D3D12_RECT rect = { 0, 0, width, height };
-				commandList->RSSetScissorRects(1, &rect);
+				commandList->SetScissorRect(rect);
 
 				ID3D12DescriptorHeap* ppHeaps[] = { &cbvDescriptorHeap.GetDescriptorHeap() };
 				commandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 				commandList->SetGraphicsRootDescriptorTable(0, cbvDescriptorHeap.RetrieveAddress(0));
 
-				D3D12_RESOURCE_TRANSITION_BARRIER transitionBarrier{};
-				transitionBarrier.pResource = renderTarget[freamIndex].Get();
-				transitionBarrier.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
-				transitionBarrier.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
 
-				D3D12_RESOURCE_BARRIER  rtvBarrier{};
-				rtvBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-				rtvBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-				rtvBarrier.Transition = transitionBarrier;
-				commandList->ResourceBarrier(1, &rtvBarrier);
+				commandList->ResourceBarrier(renderTarget[freamIndex].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 
 
 				auto handle = (D3D12_CPU_DESCRIPTOR_HANDLE)rtvDescriptorHeap.RetrieveAddress(freamIndex);
-				commandList->OMSetRenderTargets(1, &handle, FALSE, nullptr);
+				commandList->SetRenderTargets(1, &handle, nullptr);
 
 
 				FLOAT clearColor[] = { 0.0f, 0.2f, 0.4f, 1.0f };
-				commandList->ClearRenderTargetView(rtvDescriptorHeap.RetrieveAddress(freamIndex), clearColor, 0, nullptr);
+				commandList->ClearRenderTargetView(rtvDescriptorHeap.RetrieveAddress(freamIndex), clearColor);
 
 				commandList->ExecuteBundle(pBundleCommandList.Get());
 
-				transitionBarrier.pResource = renderTarget[freamIndex].Get();
-				transitionBarrier.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
-				transitionBarrier.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
 
-
-				rtvBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-				rtvBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-				rtvBarrier.Transition = transitionBarrier;
-				commandList->ResourceBarrier(1, &rtvBarrier);
+				commandList->ResourceBarrier(renderTarget[freamIndex].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
 
 
 			}
-			auto &pCommandQueue = Graphics::g_CommandManager.GetGraphicsQueue();
-			ID3D12CommandList* cls[] = { commandList.Get() };
+			auto& pCommandQueue = Graphics::g_CommandManager.GetGraphicsQueue();
+			ID3D12CommandList* cls[] = { commandList->GetCommandList()};
 			pCommandQueue.ExecuteCommandLists(_countof(cls), cls);
 			THROW_IF_FAILED(Display::g_SwapChain->Present(1, 0));
 
@@ -316,14 +261,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 			freamIndex = Display::g_SwapChain->GetCurrentBackBufferIndex();
 		}
-		}
+	}
 	catch (const stay::Exception& e)
 	{
 		MessageBoxA(nullptr, e.what(), e.getType(), 0);
 		OutputDebugStringA(e.what());
 	}
 	return 0;
-	}
+}
 
 
 
