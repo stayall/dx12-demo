@@ -11,7 +11,7 @@ namespace stay
 		GPUResoures() { Clear(); };
 		~GPUResoures() { Destory(); };
 
-		GPUResoures(ID3D12Resource* resource, D3D12_RESOURCE_STATES transitioningStatus, D3D12_RESOURCE_STATES usageStatus = D3D12_RESOURCE_STATE_COMMON);
+		GPUResoures(ID3D12Resource* resource,  D3D12_RESOURCE_STATES usageStatus = D3D12_RESOURCE_STATE_COMMON);
 		virtual D3D12_RESOURCE_BARRIER_TYPE GetResourceBarrierType() { return D3D12_RESOURCE_BARRIER_TYPE_TRANSITION; }
 		virtual void Destory() { Clear(); };
 
@@ -43,6 +43,7 @@ namespace stay
 		void Create(const std::wstring& filename, size_t size, void* pData = nullptr);
 		void* Map();
 		void Unmap(size_t begin = 0u, size_t end = -1);
+		size_t GetSize()  const { return m_size; }
 	private:
 		void* m_mapAddress = nullptr;
 		size_t m_size;

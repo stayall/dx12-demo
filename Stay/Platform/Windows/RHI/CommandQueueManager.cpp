@@ -45,7 +45,7 @@ namespace stay
 
 	void CommandQueue::WaitLastComplate()
 	{
-		WaitForFence(--m_nextFenceValue);
+		WaitForFence(m_nextFenceValue - 1);
 	}
 
 	ID3D12CommandAllocator* CommandQueue::RequierCommandListAllocator()
@@ -102,7 +102,6 @@ namespace stay
 
 		for (size_t i = 0; i < numCommandLists; i++)
 		{
-			ASSERT(commandLists[i]->GetType() == m_type && SUCCEEDED(static_cast<ID3D12GraphicsCommandList*>(commandLists[i])->Close()));
 			lists[i] = commandLists[i];
 		}
 
@@ -138,6 +137,7 @@ namespace stay
 	void  CommandQueueManager::CreateCommandList(const D3D12_COMMAND_LIST_TYPE commandListType, ID3D12GraphicsCommandList** commandList, ID3D12CommandAllocator** allocator, GraphicsPSO* pso, UINT nodeMask)
 	{
 		*allocator = GetAllocator(commandListType);
+		THROW_IF_FAILED((*allocator)->Reset());
 		ASSERT(allocator != nullptr);
 
 		if (pso != nullptr)
@@ -149,7 +149,6 @@ namespace stay
 			m_device->CreateCommandList(nodeMask, commandListType, *allocator, nullptr, IID_PPV_ARGS(commandList));
 		}
 
-		THROW_IF_FAILED((*commandList)->Close());
 	}
 
 	CommandQueue& CommandQueueManager::GetQueue(D3D12_COMMAND_LIST_TYPE commandQueueType)

@@ -52,7 +52,7 @@ namespace stay
 
 
 	public:
-		static void InitializeBuffer(const std::wstring& name, ID3D12Resource* pDstBuffer, ID3D12Resource* pSrcBuffer);
+		static void InitializeBuffer(const std::wstring& name, GPUResoures& pDstBuffer, GPUResoures& pSrcBuffer);
 
 		void SetName(const std::wstring& name);
 		void SetDescriptorHeaps(UINT numDescriptorHeaps, ID3D12DescriptorHeap** const descriptorHeaps) { m_commandList->SetDescriptorHeaps(numDescriptorHeaps, descriptorHeaps); }
@@ -113,7 +113,6 @@ namespace stay
 		void SetDepthStencil(const D3D12_CPU_DESCRIPTOR_HANDLE& dsv) { SetRenderTargets(0u, nullptr, &dsv); }
 
 		void ClearRenderTargetView(D3D12_CPU_DESCRIPTOR_HANDLE renderTargetView, const FLOAT[4]);
-
 
 	private:
 	};

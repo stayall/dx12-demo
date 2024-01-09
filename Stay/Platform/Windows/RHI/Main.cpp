@@ -127,7 +127,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 
 
-		auto commandList = stay::GraphicsCommandList::Begin();
 
 		//pCommandList->SetPipelineState(pso.GetPipelineState());
 		VertexData verticeData[]
@@ -141,11 +140,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		verticeDataRs.Create(L"Traingle Vertice Data", sizeof(verticeData), &verticeData);
 
 
+		stay::GPUBuffer modelData{};
 
-		D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
-		vertexBufferView.BufferLocation = verticeDataRs.GetGPUVirtualAddress();
-		vertexBufferView.SizeInBytes = sizeof(verticeData);
-		vertexBufferView.StrideInBytes = sizeof(VertexData);
+		modelData.Create(L"Model", 1u, verticeDataRs.GetSize(), verticeDataRs);
+
+		D3D12_VERTEX_BUFFER_VIEW vertexBufferView = modelData.VertexBufferView(sizeof(verticeData), sizeof(VertexData));
 
 
 
@@ -208,6 +207,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 		UINT freamIndex = Display::g_SwapChain->GetCurrentBackBufferIndex();
 
+		auto commandList = stay::GraphicsCommandList::Begin(L"Main Draw Model");
 		while (!Graphics::g_App->CheckMessage())
 		{
 
@@ -217,7 +217,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			}
 			{
 
-				commandList->Reset(&pso);
+				commandList->SetPipelineState(pso);
 				commandList->SetGraphicsRootSignature(rootSignature);
 
 				D3D12_VIEWPORT viewPort{};
@@ -241,23 +241,26 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 				auto handle = (D3D12_CPU_DESCRIPTOR_HANDLE)rtvDescriptorHeap.RetrieveAddress(freamIndex);
 				commandList->SetRenderTargets(1, &handle, nullptr);
 
-
 				FLOAT clearColor[] = { 0.0f, 0.2f, 0.4f, 1.0f };
 				commandList->ClearRenderTargetView(rtvDescriptorHeap.RetrieveAddress(freamIndex), clearColor);
 
 				commandList->ExecuteBundle(pBundleCommandList.Get());
+				commandList->GetCommandList()->DrawInstanced(3, 1, 0, 0);
 
 
 				commandList->ResourceBarrier(renderTarget[freamIndex].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
 
 
 			}
+
+
+			THROW_IF_FAILED(commandList->GetCommandList()->Close());
 			auto& pCommandQueue = Graphics::g_CommandManager.GetGraphicsQueue();
 			ID3D12CommandList* cls[] = { commandList->GetCommandList()};
 			pCommandQueue.ExecuteCommandLists(_countof(cls), cls);
 			THROW_IF_FAILED(Display::g_SwapChain->Present(1, 0));
-
 			pCommandQueue.WaitLastComplate();
+			commandList->Reset();
 
 			freamIndex = Display::g_SwapChain->GetCurrentBackBufferIndex();
 		}

@@ -25,7 +25,7 @@ namespace stay
 
 		auto& commandList = m_readyCommandList[type].front();
 		m_readyCommandList[type].pop();
-
+		commandList->Reset();
 		ASSERT(commandList->GetType() == type);
 
 		return commandList;
@@ -34,14 +34,13 @@ namespace stay
 
 	void CommandListManager::FreeCommandList(CommandList* commandList)
 	{
-		commandList->Reset();
 		m_readyCommandList[commandList->GetType()].push(commandList);
 	}
 
 
 	CommandList::~CommandList()
 	{
-		SAFE_RELEASE(m_commandList);
+		Graphics::g_CommandListManager.FreeCommandList(this);
 	}
 
 	CommandList* CommandList::Begin(const std::wstring& name)
@@ -51,10 +50,14 @@ namespace stay
 		return commandList;
 	}
 
-	void CommandList::InitializeBuffer(const std::wstring& name, ID3D12Resource* pDstBuffer, ID3D12Resource* pSrcBuffer)
+	void CommandList::InitializeBuffer(const std::wstring& name, GPUResoures& pDstBuffer, GPUResoures& pSrcBuffer)
 	{
 		auto pCommandList = Begin(name);
-		pCommandList->CopyResource(pDstBuffer, pSrcBuffer);
+		pCommandList->ResourceBarrier(&pDstBuffer, D3D12_RESOURCE_STATE_COPY_DEST, true);
+		pCommandList->CopyResource(pDstBuffer.GetResource(), pSrcBuffer.GetResource());
+		pCommandList->ResourceBarrier(&pDstBuffer, D3D12_RESOURCE_STATE_GENERIC_READ, true);
+
+		pCommandList->Finsh(true);
 	}
 
 
@@ -80,6 +83,8 @@ namespace stay
 			commandQueue.WaitForFence(fenceValue);
 		}
 
+		m_commandAllocator->Reset();
+		m_commandList->Reset(m_commandAllocator, m_pipelineState);
 		return fenceValue;
 
 	}
@@ -114,19 +119,16 @@ namespace stay
 
 	void CommandList::Reset(PSO* pso)
 	{
-		THROW_IF_FAILED(m_commandAllocator->Reset());
+		m_commandAllocator = Graphics::g_CommandManager.GetQueue(m_type).RequierCommandListAllocator();
+
 		if (pso == nullptr)
 		{
-			m_commandList->Reset(m_commandAllocator, nullptr);
+			THROW_IF_FAILED(m_commandAllocator->Reset());
+			THROW_IF_FAILED(m_commandList->Reset(m_commandAllocator, nullptr));
 			m_rootSignature = nullptr;
 			m_pipelineState = nullptr;
 			return;
 		}
-
-		m_commandList->Reset(m_commandAllocator, pso->GetPipelineState());
-		m_rootSignature = (pso->GetRootSignature())->GetRootSignature();
-		m_commandList->SetGraphicsRootSignature(m_rootSignature);
-		m_pipelineState = pso->GetPipelineState();
 	}
 
 	void CommandList::SetName(const std::wstring& name)
@@ -159,31 +161,13 @@ namespace stay
 			return;
 		}
 
-		if (isImmediatelyTransition)
-		{
-			D3D12_RESOURCE_TRANSITION_BARRIER transitionBarrier{};
-			transitionBarrier.pResource = gpuResource->GetResource();
-			transitionBarrier.StateBefore = gpuResource->GetCurrentStatus();
-			transitionBarrier.StateAfter = nextResourceStates;
-
-			D3D12_RESOURCE_BARRIER  rtvBarrier{};
-			rtvBarrier.Type = gpuResource->GetResourceBarrierType();
-			rtvBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-			rtvBarrier.Transition = transitionBarrier;
-			m_commandList->ResourceBarrier(1, &rtvBarrier);
-
-			gpuResource->SetCurrentStatus(nextResourceStates);
-			gpuResource->SetTransitioningStatus(nextResourceStates);
-			return;
-		}
-
 		ASSERT(m_numsTransitionBarrier < sc_NumMaxBarriers);
 
 		gpuResource->SetTransitioningStatus(nextResourceStates);
 		m_transitionResource[m_numsTransitionBarrier] = gpuResource;
 		++m_numsTransitionBarrier;
 
-		if (m_numsTransitionBarrier >= sc_NumMaxBarriers)
+		if (m_numsTransitionBarrier >= sc_NumMaxBarriers || isImmediatelyTransition)
 		{
 			FlushAllBarrier();
 		}
@@ -196,9 +180,14 @@ namespace stay
 		{
 			return;
 		}
+		D3D12_RESOURCE_BARRIER rb = {};
+		rb.Transition.pResource = resoures;
+		rb.Transition.StateAfter = nextResourceStates;
+		rb.Transition.StateBefore = currentResourceStates;
+		rb.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+		rb.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
 
-		GPUResoures gpuResoures(resoures, currentResourceStates, nextResourceStates);
-		ResourceBarrier(&gpuResoures, nextResourceStates, true);
+		m_commandList->ResourceBarrier(1, &rb);
 	}
 
 
@@ -230,7 +219,7 @@ namespace stay
 		m_numsTransitionBarrier = 0u;
 	}
 
-	void CommandList::ExecuteBundle(CommandList &pCommandList)
+	void CommandList::ExecuteBundle(CommandList& pCommandList)
 	{
 		m_commandList->ExecuteBundle(pCommandList.GetCommandList());
 	}

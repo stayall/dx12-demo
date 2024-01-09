@@ -31,13 +31,18 @@ namespace stay::Graphics
 			ComPtr<IDXGIFactory4> pFactory;
 			{
 #ifdef _DEBUG
+				ComPtr<ID3D12Debug> debugController;
+				if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController))))
+				{
+					debugController->EnableDebugLayer();
+				}
 
 				THROW_IF_FAILED(CreateDXGIFactory2(DXGI_CREATE_FACTORY_DEBUG, IID_PPV_ARGS(pFactory.GetAddressOf())));
 #else
 				THROW_IF_FAILED(CreateDXGIFactory2(0, IID_PPV_ARGS(pFactory.GetAddressOf())));
 #endif // _DEBUG
 
-			}
+		}
 
 			{
 
@@ -73,11 +78,11 @@ namespace stay::Graphics
 #endif // _DEBUG
 
 
-		}
+	}
 		g_Device = pDevice.Detach();
 
 		g_CommandManager.Initialize(g_Device);
-	}
+}
 
 	void Finalize()
 	{

@@ -7,14 +7,11 @@
 
 namespace stay
 {
-	GPUResoures::GPUResoures(ID3D12Resource* resource, D3D12_RESOURCE_STATES transitioningStatus, D3D12_RESOURCE_STATES usageStatus)
+	GPUResoures::GPUResoures(ID3D12Resource* resource, D3D12_RESOURCE_STATES usageStatus)
 	{
-		if (resource != nullptr)
-		{
-			m_gpuAddress = resource->GetGPUVirtualAddress();
-		}
+		m_resource = resource;
 
-		m_transitioningStatus = transitioningStatus;
+		m_transitioningStatus = usageStatus;
 		m_usageStatus = usageStatus;
 	}
 
@@ -99,17 +96,19 @@ namespace stay
 		(name);
 	}
 
-	void GPUBuffer::Create(const std::wstring& name, size_t numElements, size_t elementSize, ID3D12Resource* pData)
+
+
+	void GPUBuffer::Create(const std::wstring& name, size_t numElements, size_t elementSize, UploadBuffer& uploadBuffer)
 	{
 		m_elementCount = numElements;
 		m_elementSize = elementSize;
 		m_bufferSize = m_elementCount * m_elementSize;
-		
+
 		m_usageStatus = D3D12_RESOURCE_STATE_COMMON;
 		m_transitioningStatus = m_usageStatus;
 
 		D3D12_HEAP_PROPERTIES heapPro{};
-		heapPro.Type = D3D12_HEAP_TYPE_UPLOAD;
+		heapPro.Type = D3D12_HEAP_TYPE_DEFAULT;
 		heapPro.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
 		heapPro.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
 
@@ -132,11 +131,10 @@ namespace stay
 				nullptr, IID_PPV_ARGS(&m_resource)));
 
 		m_gpuAddress = m_resource->GetGPUVirtualAddress();
+
 		
-		if (pData != nullptr)
-		{
-			CommandList::InitializeBuffer(L"initialize Buffer", m_resource.Get(), pData);
-		}
+			CommandList::InitializeBuffer(L"initialize Buffer", *this, uploadBuffer);
+		
 
 #ifdef _RELEASE
 		(name);
@@ -144,12 +142,6 @@ namespace stay
 		m_resource->SetName(name.c_str());
 #endif // RELEASE
 
-
-	}
-
-	void GPUBuffer::Create(const std::wstring& name, size_t numElements, size_t elementSize, UploadBuffer& uploadBuffer)
-	{
-		Create(name, numElements, elementSize, uploadBuffer.GetResource());
 	}
 
 	D3D12_VERTEX_BUFFER_VIEW GPUBuffer::VertexBufferView(UINT offset, UINT SizeInBytes, UINT StrideInBytes) const
