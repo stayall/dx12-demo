@@ -42,7 +42,7 @@ namespace stay
 
 		RootSignatureParameter& operator[](size_t index) { assert(index < m_parameters.size()); return  m_parameters[index]; }
 		const RootSignatureParameter& operator[](size_t index) const { assert(index < m_parameters.size()); return  m_parameters[index]; }
-		ID3D12RootSignature* GetRootSignature() { return m_rootSignature; }
+		ID3D12RootSignature* GetRootSignature() const { return m_rootSignature; }
 		void Finalize(ID3D12Device* device);
 	private:
 		static D3D12_ROOT_SIGNATURE_FLAGS s_FullAcceseFlags;
