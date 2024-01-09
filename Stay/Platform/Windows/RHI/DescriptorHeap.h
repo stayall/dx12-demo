@@ -34,4 +34,16 @@ namespace stay
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_descriptorHeap;
 	};
 
+	//TODO: 可以为线程细化颗粒度
+	class DescriptorTableAllocator
+	{
+	public:
+		void Create();
+	
+		void Destory();
+
+	private:
+		//std::vector<DescriptorHeap> m_descriptorTablePool;
+	
+	};
 }

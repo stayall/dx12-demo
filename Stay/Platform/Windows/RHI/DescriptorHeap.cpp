@@ -13,7 +13,7 @@ namespace stay
 		THROW_IF_FAILED(device->CreateDescriptorHeap(&cbhDesc, IID_PPV_ARGS(&m_descriptorHeap)));
 		if (flags == D3D12_DESCRIPTOR_HEAP_FLAG_NONE)
 		{
-			m_currentHanlde = { m_descriptorHeap->GetCPUDescriptorHandleForHeapStart(), D3D12_GPU_DESCRIPTOR_HANDLE(CPU_GPU_VIRTUAL_ADDRESS_UNKNOWN) };
+			m_currentHanlde = { m_descriptorHeap->GetCPUDescriptorHandleForHeapStart(), D3D12_GPU_DESCRIPTOR_HANDLE{CPU_GPU_VIRTUAL_ADDRESS_UNKNOWN} };
 		}
 		else if (flags == D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE)
 		{
