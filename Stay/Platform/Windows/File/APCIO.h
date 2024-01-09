@@ -43,7 +43,7 @@ namespace stay::File
 		virtual ~APCIOSteam() = default;
 
 		virtual DWORD AsycnRead(void* buffer, DWORD size);
-		virtual DWORD AsycnWrite() {};
+		virtual DWORD AsycnWrite() { return 0; };
 	};
 
 }

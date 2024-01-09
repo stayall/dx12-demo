@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\vcpkg.D.games.dx12demo.vcpkg.1.0.0\build\native\vcpkg.D.games.dx12demo.vcpkg.props" Condition="Exists('..\packages\vcpkg.D.games.dx12demo.vcpkg.1.0.0\build\native\vcpkg.D.games.dx12demo.vcpkg.props')" />
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -86,7 +87,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>Platform/;Core/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -104,7 +105,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>Platform/;Core/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -123,7 +124,7 @@
       </SDLCheck>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>Default</ConformanceMode>
-      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <MultiProcessorCompilation>
       </MultiProcessorCompilation>
@@ -134,7 +135,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <SupportJustMyCode>false</SupportJustMyCode>
-      <AdditionalIncludeDirectories>Platform/;Core/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -162,7 +163,7 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FloatingPointModel>Fast</FloatingPointModel>
-      <AdditionalIncludeDirectories>Platform/;Core/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -178,9 +179,9 @@
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="FreamWork\Common\GraphicsModule.cpp" />
     <ClCompile Include="Platform\Windows\File\APCIO.cpp" />
     <ClCompile Include="FreamWork\Common\BaseApplication.cpp" />
-    <ClCompile Include="FreamWork\Common\main.cpp" />
     <ClCompile Include="FreamWork\Empty\EmptyApplication.h" />
     <ClCompile Include="Platform\Windows\RHI\App.cpp" />
     <ClCompile Include="Platform\Windows\RHI\CommandListManager.cpp" />
@@ -188,7 +189,9 @@
     <ClCompile Include="Platform\Windows\RHI\DescriptorHeap.cpp" />
     <ClCompile Include="Platform\Windows\RHI\Display.cpp" />
     <ClCompile Include="Platform\Windows\Exception.cpp" />
+    <ClCompile Include="Platform\Windows\RHI\GPUResoures.cpp" />
     <ClCompile Include="Platform\Windows\RHI\GraphicsCore.cpp" />
+    <ClCompile Include="Platform\Windows\RHI\Main.cpp" />
     <ClCompile Include="Platform\Windows\RHI\PipelineState.cpp" />
     <ClCompile Include="Platform\Windows\RHI\RootSignature.cpp" />
     <ClCompile Include="Platform\Windows\RHI\Window.cpp" />
@@ -197,20 +200,21 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Core\Math\Math.h" />
+    <ClInclude Include="FreamWork\Common\GraphicsModule.h" />
     <ClInclude Include="Platform\Windows\File\APCIO.h" />
     <ClInclude Include="FreamWork\Common\BaseApplication.h" />
     <ClInclude Include="FreamWork\Interface\IApplication.h" />
     <ClInclude Include="FreamWork\Interface\IRuntimeModule.h" />
     <ClInclude Include="FreamWork\Interface\IUnkown.h" />
-    <ClInclude Include="Platform\Windows\File\WinError.h" />
     <ClInclude Include="Platform\Windows\RHI\App.h" />
-    <ClInclude Include="Platform\Windows\RHI\ClassAttribute.h" />
+    <ClInclude Include="Platform\Windows\ClassAttribute.h" />
     <ClInclude Include="Platform\Windows\RHI\CommandListManager.h" />
     <ClInclude Include="Platform\Windows\RHI\CommandQueueManager.h" />
     <ClInclude Include="Platform\Windows\RHI\d3dx12.h" />
     <ClInclude Include="Platform\Windows\RHI\DescriptorHeap.h" />
     <ClInclude Include="Platform\Windows\RHI\Display.h" />
     <ClInclude Include="Platform\Windows\Exception.h" />
+    <ClInclude Include="Platform\Windows\RHI\GPUResoures.h" />
     <ClInclude Include="Platform\Windows\RHI\GraphicsCore.h" />
     <ClInclude Include="Platform\Windows\RHI\PipelineState.h" />
     <ClInclude Include="Platform\Windows\RHI\Resource\resource1.h" />
@@ -222,6 +226,7 @@
     <ClInclude Include="Resource\Model.h" />
     <ClInclude Include="Resource\Sence.h" />
     <ClInclude Include="Resource\SenceObject.h" />
+    <ClInclude Include="Resource\SenceParse.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="CMakeLists.txt" />
@@ -249,11 +254,14 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\packages\WinPixEventRuntime.1.0.231030001\build\WinPixEventRuntime.targets" Condition="Exists('..\packages\WinPixEventRuntime.1.0.231030001\build\WinPixEventRuntime.targets')" />
+    <Import Project="..\packages\vcpkg.D.games.dx12demo.vcpkg.1.0.0\build\native\vcpkg.D.games.dx12demo.vcpkg.targets" Condition="Exists('..\packages\vcpkg.D.games.dx12demo.vcpkg.1.0.0\build\native\vcpkg.D.games.dx12demo.vcpkg.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\WinPixEventRuntime.1.0.231030001\build\WinPixEventRuntime.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\WinPixEventRuntime.1.0.231030001\build\WinPixEventRuntime.targets'))" />
+    <Error Condition="!Exists('..\packages\vcpkg.D.games.dx12demo.vcpkg.1.0.0\build\native\vcpkg.D.games.dx12demo.vcpkg.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\vcpkg.D.games.dx12demo.vcpkg.1.0.0\build\native\vcpkg.D.games.dx12demo.vcpkg.props'))" />
+    <Error Condition="!Exists('..\packages\vcpkg.D.games.dx12demo.vcpkg.1.0.0\build\native\vcpkg.D.games.dx12demo.vcpkg.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\vcpkg.D.games.dx12demo.vcpkg.1.0.0\build\native\vcpkg.D.games.dx12demo.vcpkg.targets'))" />
   </Target>
 </Project>
