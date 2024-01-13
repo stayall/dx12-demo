@@ -113,6 +113,7 @@ namespace stay
 			pWindow = reinterpret_cast<Window*>(pCreate->lpCreateParams);
 			SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(pWindow));
 			SetWindowLongPtr(hWnd, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(WinProcHandle));
+			break;
 		default:
 			break;
 		}

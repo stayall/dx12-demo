@@ -36,9 +36,9 @@ namespace stay
 
 	void BaseApplication::finalize()
 	{
-		size_t len = m_modules.size();
+		int len = m_modules.size();
 
-		for (size_t i = len; i >= 0; i--)
+		for (int i = len; i >= 0; i--)
 		{
 			m_modules[i]->finalize();
 		}

@@ -16,7 +16,7 @@ namespace stay
 	class FileHelper
 	{
 	public:
-		static void GetAssetsPath(_Out_writes_(pathSize) WCHAR* path, UINT pathSize);
+		static void GetAssetsPath(WCHAR* path, UINT pathSize);
 		
 	};
 }
