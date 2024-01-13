@@ -250,17 +250,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 				commandList->ResourceBarrier(renderTarget[freamIndex].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
 
-
+				commandList->Flush(true);
 			}
 
-
-			THROW_IF_FAILED(commandList->GetCommandList()->Close());
-			auto& pCommandQueue = Graphics::g_CommandManager.GetGraphicsQueue();
-			ID3D12CommandList* cls[] = { commandList->GetCommandList()};
-			pCommandQueue.ExecuteCommandLists(_countof(cls), cls);
+		
 			THROW_IF_FAILED(Display::g_SwapChain->Present(0, DXGI_PRESENT_ALLOW_TEARING));
-			pCommandQueue.WaitLastComplate();
-			commandList->Reset();
 
 			freamIndex = Display::g_SwapChain->GetCurrentBackBufferIndex();
 		}
