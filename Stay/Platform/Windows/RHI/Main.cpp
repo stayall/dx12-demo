@@ -258,7 +258,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			auto& pCommandQueue = Graphics::g_CommandManager.GetGraphicsQueue();
 			ID3D12CommandList* cls[] = { commandList->GetCommandList()};
 			pCommandQueue.ExecuteCommandLists(_countof(cls), cls);
-			THROW_IF_FAILED(Display::g_SwapChain->Present(1, 0));
+			THROW_IF_FAILED(Display::g_SwapChain->Present(0, DXGI_PRESENT_ALLOW_TEARING));
 			pCommandQueue.WaitLastComplate();
 			commandList->Reset();
 

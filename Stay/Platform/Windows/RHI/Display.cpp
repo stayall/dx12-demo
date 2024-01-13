@@ -23,6 +23,7 @@ namespace stay::Display
 		swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 		swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 		swapChainDesc.SampleDesc.Count = 1;
+		swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
 
 		THROW_IF_FAILED(factory->CreateSwapChainForHwnd(
 			Graphics::g_CommandManager.GetGraphicsQueue().GetCommandQueue(),        // Swap chain needs the queue so that it can force a flush on it.
