@@ -253,11 +253,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 				commandList->Flush(true);
 			}
 
-		
+
 			THROW_IF_FAILED(Display::g_SwapChain->Present(0, DXGI_PRESENT_ALLOW_TEARING));
 
 			freamIndex = Display::g_SwapChain->GetCurrentBackBufferIndex();
 		}
+
+
 	}
 	catch (const stay::Exception& e)
 	{

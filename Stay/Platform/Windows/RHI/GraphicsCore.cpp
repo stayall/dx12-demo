@@ -161,4 +161,5 @@ namespace stay::Graphics
 
 		*ppAdapter = adapter.Detach();
 	}
+
 }

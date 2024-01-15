@@ -1,7 +1,10 @@
 #pragma once
 #include <assimp/Importer.hpp>
 
-class SenceParse
+namespace stay
 {
+	class SenceParse
+	{
 
-};
+	};
+}
