@@ -15,6 +15,7 @@ namespace stay
 
 	public:
 		WindowException(const char* filePath, int line, HRESULT hr);
+		WindowException(const char* filePath, int line, const char* errorMsg);
 		virtual const char* what() const noexcept;
 		virtual const char* getType() const noexcept;
 		virtual const std::string getOriginString() const noexcept;
@@ -25,6 +26,7 @@ namespace stay
 
 	private:
 		HRESULT hr;
+		std::string m_errorMsg;
 	};
 
 	HRESULT WINAPI ErrorTraceW(
@@ -68,6 +70,7 @@ inline void PrintSubMessage(const char* format, ...)
 	vsprintf_s(buffer, 256, format, ap);
 	va_end(ap);
 	OutputDebugStringA(buffer);
+	OutputDebugStringA("   ");
 }
 #endif
 
@@ -78,6 +81,9 @@ inline void PrintSubMessage(const char* format, ...)
 #define THROW_LASTEXCEPTION() \
 	throw stay::WindowException(__FILE__, __LINE__, GetLastError())
 
+#define THROW_EXCEPTION_INFO(info) \
+	throw stay::WindowException(__FILE__, __LINE__, info)
+
 #define ASSERT(hr, ...)\
 do {\
 	if (!(bool)(hr)) \
@@ -85,6 +91,17 @@ do {\
 		PrintSubMessage(#hr);\
 		PrintSubMessage(__VA_ARGS__);\
 		__debugbreak(); \
+	}\
+} while (0)
+
+#define USER_ASSERT(hr, ...)\
+do {\
+	if (!(bool)(hr)) \
+	{\
+		PrintSubMessage(#hr);\
+		PrintSubMessage(__VA_ARGS__);\
+	THROW_EXCEPTION_INFO(#hr);\
+		; \
 	}\
 } while (0)
 

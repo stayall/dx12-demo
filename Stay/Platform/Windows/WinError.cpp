@@ -99,6 +99,13 @@ namespace stay
 		this->hr = hr;
 	}
 
+	WindowException::WindowException(const char* filePath, int line, const char* errorMsg)
+		: Exception(filePath, line)
+	{
+		this->hr = 0;
+		m_errorMsg = errorMsg;
+	}
+
 	const char* WindowException::what() const noexcept
 	{
 		std::stringstream ss;
@@ -125,6 +132,10 @@ namespace stay
 
 	const std::string WindowException::getErrorInfo() const noexcept
 	{
+		if (hr == 0)
+		{
+			return m_errorMsg;
+		}
 		return TranslateError(hr);
 	}
 

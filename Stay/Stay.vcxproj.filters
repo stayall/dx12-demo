@@ -63,10 +63,19 @@
     <ClCompile Include="FreamWork\Common\GraphicsModule.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Platform\Windows\RHI\Main.cpp">
+    <ClCompile Include="Platform\Windows\RHI\GPUResoures.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Platform\Windows\RHI\GPUResoures.cpp">
+    <ClCompile Include="Core\Memory\MemoryManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\SenceObject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\SenceParse.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Test\TestImport.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -140,9 +149,6 @@
     <ClInclude Include="Resource\Sence.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Math\Math.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Resource\SenceObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -153,6 +159,21 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Platform\Windows\RHI\GPUResoures.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Math\MathType.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Memory\MemoryManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\File\Path.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\ResourceError.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\SenceManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

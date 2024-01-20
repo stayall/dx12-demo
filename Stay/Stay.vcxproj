@@ -179,6 +179,7 @@
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Core\Memory\MemoryManager.cpp" />
     <ClCompile Include="FreamWork\Common\GraphicsModule.cpp" />
     <ClCompile Include="Platform\Windows\File\APCIO.cpp" />
     <ClCompile Include="FreamWork\Common\BaseApplication.cpp" />
@@ -191,15 +192,19 @@
     <ClCompile Include="Platform\Windows\Exception.cpp" />
     <ClCompile Include="Platform\Windows\RHI\GPUResoures.cpp" />
     <ClCompile Include="Platform\Windows\RHI\GraphicsCore.cpp" />
-    <ClCompile Include="Platform\Windows\RHI\Main.cpp" />
     <ClCompile Include="Platform\Windows\RHI\PipelineState.cpp" />
     <ClCompile Include="Platform\Windows\RHI\RootSignature.cpp" />
     <ClCompile Include="Platform\Windows\RHI\Window.cpp" />
     <ClCompile Include="Platform\Windows\WinHelper.cpp" />
     <ClCompile Include="Platform\Windows\WinError.cpp" />
+    <ClCompile Include="Resource\SenceObject.cpp" />
+    <ClCompile Include="Resource\SenceParse.cpp" />
+    <ClCompile Include="Test\TestImport.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Core\Math\Math.h" />
+    <ClInclude Include="Core\File\Path.h" />
+    <ClInclude Include="Core\Math\MathType.h" />
+    <ClInclude Include="Core\Memory\MemoryManager.h" />
     <ClInclude Include="FreamWork\Common\GraphicsModule.h" />
     <ClInclude Include="Platform\Windows\File\APCIO.h" />
     <ClInclude Include="FreamWork\Common\BaseApplication.h" />
@@ -224,7 +229,9 @@
     <ClInclude Include="Platform\Windows\WinStd.h" />
     <ClInclude Include="Platform\Windows\WinError.h" />
     <ClInclude Include="Resource\Model.h" />
+    <ClInclude Include="Resource\ResourceError.h" />
     <ClInclude Include="Resource\Sence.h" />
+    <ClInclude Include="Resource\SenceManager.h" />
     <ClInclude Include="Resource\SenceObject.h" />
     <ClInclude Include="Resource\SenceParse.h" />
   </ItemGroup>

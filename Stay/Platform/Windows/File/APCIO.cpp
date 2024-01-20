@@ -63,7 +63,7 @@ namespace stay::File
 	{
 		auto count = GetFileSize();
 		buffer = new uint8_t[count];
-		
+		(size);
 		//::ReadFile(m_file, buffer, size, nullptr, &m_overlappen);
 
 		return 0;
