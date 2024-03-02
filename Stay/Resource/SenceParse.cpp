@@ -33,11 +33,11 @@ namespace  stay::Sence
 			std::vector<std::shared_ptr<Material>> materials;
 			for (size_t i = 0; i < aiScene->mNumMaterials; i++)
 			{
-				sence->m_materials.emplace_back()
+				sence->m_materials.emplace_back();
 			}
 		}
 
-		return ;
+		return sence;
 	}
 
 	Mesh SenceParse::ParseMesh(aiMesh** meshs, unsigned int numMesh)
@@ -70,6 +70,6 @@ namespace  stay::Sence
 
 		}
 
-		return std::move(mesh);
+		return mesh;
 	}
 }

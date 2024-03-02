@@ -9,8 +9,10 @@ namespace stay::Sence
 {
 	class Sence
 	{
-		
+
 	public:
+		Sence() { m_senceNode = std::make_shared<EmptyNode>("Root"); }
+
 		std::shared_ptr<BaseSenceNode> m_senceNode;
 
 		std::vector<std::shared_ptr<Geometry>> m_geometries;

@@ -158,7 +158,7 @@ namespace stay::Sence
 			bUsingSingleValue = true;
 			Value = rhs;
 		}
-		T GetValue() const { return Value };
+		T GetValue() const { return Value; };
 
 		void SetTexture(const std::shared_ptr<Texture>& rhs)
 		{
@@ -194,12 +194,12 @@ namespace stay::Sence
 
 #define XX(attri) void Set##attri##Texture(std::shared_ptr<Texture> value) {m_##attri.SetTexture(value);}
 
-		XX(BaseColor, Math::Color);
-		XX(Normal, Math::Vector);
-		XX(Specular, Math::Color);
-		XX(Roughness, Math::Float);
-		XX(Metallic, Math::Float);
-		XX(AmbientOcclusion, Math::Float);
+		XX(BaseColor);
+		XX(Normal);
+		XX(Specular);
+		XX(Roughness);
+		XX(Metallic);
+		XX(AmbientOcclusion);
 #undef XX
 
 #define XX(attri, type) \

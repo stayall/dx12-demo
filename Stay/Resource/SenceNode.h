@@ -29,8 +29,8 @@ namespace stay::Sence
 	class SenceNode : public BaseSenceNode
 	{
 	public:
-		SenceNode(std::shared_ptr<T>& object) : BaseSenceNode("") { m_currentObject = object };
-		SenceNode(std::shared_ptr<T>&& object) : BaseSenceNode("") { m_currentObject = std::move(object) };
+		SenceNode(std::shared_ptr<T>& object) : BaseSenceNode("") { m_currentObject = object; };
+		SenceNode(std::shared_ptr<T>&& object) : BaseSenceNode("") { m_currentObject = std::move(object); };
 	private:
 		std::shared_ptr<T> m_currentObject;
 	};
@@ -38,16 +38,18 @@ namespace stay::Sence
 	class GeometryNode : public SenceNode<Geometry>
 	{
 	public:
-
+		GeometryNode(std::shared_ptr<Geometry>& object) : SenceNode<Geometry>(object) {};
+		GeometryNode(std::shared_ptr<Geometry>&& object) : SenceNode<Geometry>(object) {};
 	private:
-		bool m_castShadow;
-		bool m_visible;
+		bool m_castShadow = false;
+		bool m_visible = true;
 	};
 
 	class LightNode : public SenceNode<Light>
 	{
 	public:
-
+		LightNode(std::shared_ptr<Light>& object) : SenceNode<Light>(object) {};
+		LightNode(std::shared_ptr<Light>&& object) : SenceNode<Light>(object) {};
 	private:
 
 	};
@@ -55,6 +57,8 @@ namespace stay::Sence
 	class CameraNode : public SenceNode<Camera>
 	{
 	public:
+		CameraNode(std::shared_ptr<Camera>& object) : SenceNode<Camera>(object) {};
+		CameraNode(std::shared_ptr<Camera>&& object) : SenceNode<Camera>(object) {};
 		void SetTarget(const Math::Vector& target) { m_target = target; }
 	private:
 		Math::Vector m_target;
