@@ -7,6 +7,7 @@ namespace stay::Math
 	using Quaternion = DirectX::XMVECTOR;
 	using Matrix = DirectX::XMMATRIX;
 	using Float = float;
+	using UINT = unsigned int;
 
 	using Color = DirectX::XMVECTOR;
 }
