@@ -7,18 +7,21 @@
 
 #include <Core/Math/MathType.h>
 
+#include "Image.h"
+
 namespace stay::Sence
 {
 
 	enum class SenceObjectType
 	{
 		Invaild = -1,
+		kGeometry,
 		kMesh,
 		kMeshVertex,
 		kMeshIndex,
 		kTransform,
 		kMaterial,
-		kMap,
+		kTexture,
 		kCamera,
 		kLight
 	};
@@ -83,7 +86,7 @@ namespace stay::Sence
 		std::shared_ptr<uint32_t[]> m_data;
 	};
 
-	class Mesh : BaseSenceObject
+	class Mesh : public BaseSenceObject
 	{
 	public:
 		Mesh();
@@ -106,5 +109,200 @@ namespace stay::Sence
 		size_t m_numSubMesh = 0;
 		std::vector<VertexArray> m_vertexDatas[VertexArray::VertexDataType::kNumVertexDataType];
 		std::vector<IndexArray> m_vertexIndice;
+	};
+
+	class Transform : BaseSenceObject
+	{
+	public:
+		Transform() : BaseSenceObject(SenceObjectType::kTransform) {};
+
+	private:
+		Math::Vector m_position;
+		Math::Quaternion m_rotation;
+		Math::Vector m_scale = {1.0f, 1.0f, 1.0f};
+
+		Math::Matrix m_tranformMatrix;
+	};
+
+	class Geometry : public BaseSenceObject
+	{
+	public:
+		Geometry() : BaseSenceObject(SenceObjectType::kGeometry) {};
+		
+		void AddMesh(Mesh&& mesh) { m_meshs.push_back(std::move(mesh)); }
+	private:
+		std::vector<Mesh> m_meshs;
+		Transform m_transform;
+
+	};
+
+	class Texture : public BaseSenceObject
+	{
+	public:
+		Texture() : BaseSenceObject(SenceObjectType::kTexture) {}
+		Texture(const std::string& name) : BaseSenceObject(SenceObjectType::kTexture), m_name(name) { LoadTexture(); }
+
+		void SetName(const std::string& name) { m_name = name; }
+		void LoadTexture();
+		std::shared_ptr<Image> GetImage() const { return m_image; }
+	private:
+		std::string m_name;
+		std::shared_ptr<Image> m_image = nullptr;
+
+	};
+	template <typename T>
+	struct ParameterValueMap
+	{
+		void SetValue(const T& rhs)
+		{
+			bUsingSingleValue = true;
+			Value = rhs;
+		}
+		T GetValue() const { return Value };
+
+		void SetTexture(const std::shared_ptr<Texture>& rhs)
+		{
+			bUsingSingleValue = false;
+			Map = rhs;
+		}
+
+		std::shared_ptr<Texture> GetTexture() const { return  Map; }
+
+	private:
+		bool bUsingSingleValue = true;
+		T Value;
+		std::shared_ptr<Texture> Map;
+	};
+
+	class Material : BaseSenceObject
+	{
+	public:
+		Material() : BaseSenceObject(SenceObjectType::kMaterial) {};
+		~Material() {};
+
+
+#define XX(attri, type) void Set##attri##Value(type value) {m_##attri.SetValue(value);}
+
+		XX(BaseColor, Math::Color);
+		XX(Normal, Math::Vector);
+		XX(Specular, Math::Color);
+		XX(Roughness, Math::Float);
+		XX(Metallic, Math::Float);
+		XX(AmbientOcclusion, Math::Float);
+
+#undef XX
+
+#define XX(attri) void Set##attri##Texture(std::shared_ptr<Texture> value) {m_##attri.SetTexture(value);}
+
+		XX(BaseColor, Math::Color);
+		XX(Normal, Math::Vector);
+		XX(Specular, Math::Color);
+		XX(Roughness, Math::Float);
+		XX(Metallic, Math::Float);
+		XX(AmbientOcclusion, Math::Float);
+#undef XX
+
+#define XX(attri, type) \
+	type Get##attri##Vaule() const {return m_##attri.GetValue();}
+
+		XX(BaseColor, Math::Color);
+		XX(Normal, Math::Vector);
+		XX(Specular, Math::Color);
+		XX(Roughness, Math::Float);
+		XX(Metallic, Math::Float);
+		XX(AmbientOcclusion, Math::Float);
+#undef XX
+
+#define XX(attri, type) \
+	std::shared_ptr<Texture> Get##attri##Texure() const {return m_##attri.GetTexture();}
+
+		XX(BaseColor, Math::Color);
+		XX(Normal, Math::Vector);
+		XX(Specular, Math::Color);
+		XX(Roughness, Math::Float);
+		XX(Metallic, Math::Float);
+		XX(AmbientOcclusion, Math::Float);
+#undef XX
+
+	private:
+		ParameterValueMap<Math::Color> m_BaseColor = {};
+		ParameterValueMap<Math::Vector> m_Normal = {};
+		ParameterValueMap<Math::Color> m_Specular = {};
+		ParameterValueMap<Math::Float> m_Roughness = {};
+		ParameterValueMap<Math::Float> m_Metallic = {};
+		ParameterValueMap<Math::Float> m_AmbientOcclusion = {};
+	};
+
+
+	class Light : public BaseSenceObject
+	{
+	public:
+		using AttenFunc = Math::Float(Math::Float, Math::Float);
+		enum LightType
+		{
+			kInvaild,
+			kDirectionalLight,
+			kPointLight,
+
+		};
+
+		Light() : BaseSenceObject(SenceObjectType::kLight) {};
+		Light(LightType type, Math::Vector color, Math::Float intensity = 1.0f) : BaseSenceObject(SenceObjectType::kLight), m_type(type), m_color(color), m_intensity(intensity) {}
+
+
+	protected:
+		LightType m_type = kInvaild;
+
+		Math::Vector m_color;
+		Math::Float m_intensity;
+
+		Math::Float m_nearCilp = 0.0f;
+		Math::Float m_farCilp = 1000.0f;
+
+		AttenFunc m_lightAttenuation;
+		bool m_castShadow;
+
+	};
+
+	class DirectionalLight : public Light
+	{
+	public:
+		DirectionalLight() = default;
+		DirectionalLight(Math::Vector color, Math::Vector direction, Math::Float intensity = 1.0f)
+			: Light(kDirectionalLight, color, intensity), m_direction(direction) {};
+	private:
+		Math::Vector m_direction;
+	};
+
+	class Camera :public BaseSenceObject
+	{
+	public:
+		enum CameraType
+		{
+			kProjection,
+			kOrthogonal
+		};
+		Camera() : BaseSenceObject(SenceObjectType::kCamera) {};
+		Camera(CameraType type, Math::Float aspectRatio, Math::Float nearClip = 0.01f, Math::Float farClip = 1000.0f)
+			: BaseSenceObject(SenceObjectType::kCamera),
+			m_type(type), m_aspectRatio(aspectRatio), m_nearClip(nearClip), m_farClip(farClip) {}
+
+	protected:
+		CameraType m_type;
+
+		Math::Float m_aspectRatio;
+
+		Math::Float m_nearClip;
+		Math::Float m_farClip;
+	};
+
+	class ProjectionCamera : public Camera
+	{
+	public:
+		ProjectionCamera(Math::Float fov, Math::Float aspectRatio, Math::Float nearClip = 0.01f, Math::Float farClip = 1000.0f) :
+			Camera(kProjection, aspectRatio, nearClip, farClip), m_fov(fov) {}
+
+	private:
+		Math::Float m_fov;
 	};
 }

@@ -21,15 +21,23 @@ namespace  stay::Sence
 		aiProcess_SortByPType |
 		aiProcess_MakeLeftHanded;
 
-	Sence SenceParse::ParseSence(const char* filename)
+	std::shared_ptr<Sence> SenceParse::ParseSence(const char* filename)
 	{
-		Sence sence;
-		const aiScene* scene = m_importer.ReadFile(filename, kPostprocessFlag);
+		auto sence = std::make_shared<Sence>();
 
-		USER_ASSERT(scene != nullptr, m_importer.GetErrorString());
-		scene->mRootNode;
-		sence.m_meshs.push_back(std::make_unique<Mesh>(ParseMesh(scene->mMeshes, scene->mNumMeshes)));
-		return sence;
+		const aiScene* aiScene = m_importer.ReadFile(filename, kPostprocessFlag);
+		USER_ASSERT(aiScene != nullptr, m_importer.GetErrorString());
+
+		if (aiScene->HasMaterials())
+		{
+			std::vector<std::shared_ptr<Material>> materials;
+			for (size_t i = 0; i < aiScene->mNumMaterials; i++)
+			{
+				sence->m_materials.emplace_back()
+			}
+		}
+
+		return ;
 	}
 
 	Mesh SenceParse::ParseMesh(aiMesh** meshs, unsigned int numMesh)
@@ -46,7 +54,7 @@ namespace  stay::Sence
 
 			if (pMesh->HasNormals())
 			{
-				
+
 			}
 
 			std::vector<unsigned int> indices;

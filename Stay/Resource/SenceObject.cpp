@@ -87,5 +87,17 @@ size_t Mesh::GetIndexCount(size_t index) const
 
 	return m_vertexIndice[index].GetIndexCount();
 }
+
+void Texture::LoadTexture()
+{
+	if (m_image != nullptr)
+	{
+		return;
+	}
+
+
+
+}
+
 END_NAMESPACE(stay::Sence)
 

@@ -11,7 +11,7 @@ namespace stay::Sence
 	class SenceParse
 	{
 	public:
-		 Sence ParseSence(const char* filename);
+		 std::shared_ptr<Sence> ParseSence(const char* filename);
 		 Mesh ParseMesh(aiMesh** meshs, unsigned int numMesh);
 
 		 std::string GetErrorInfo() const { return m_importer.GetErrorString(); }

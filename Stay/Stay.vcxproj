@@ -197,9 +197,10 @@
     <ClCompile Include="Platform\Windows\RHI\Window.cpp" />
     <ClCompile Include="Platform\Windows\WinHelper.cpp" />
     <ClCompile Include="Platform\Windows\WinError.cpp" />
+    <ClCompile Include="Resource\Image.cpp" />
     <ClCompile Include="Resource\SenceObject.cpp" />
     <ClCompile Include="Resource\SenceParse.cpp" />
-    <ClCompile Include="Test\TestImport.cpp" />
+    <ClCompile Include="Resource\Test\SenceNodeTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Core\File\Path.h" />
@@ -228,10 +229,13 @@
     <ClInclude Include="Platform\Windows\WinHelper.h" />
     <ClInclude Include="Platform\Windows\WinStd.h" />
     <ClInclude Include="Platform\Windows\WinError.h" />
-    <ClInclude Include="Resource\Model.h" />
+    <ClInclude Include="Resource\Image.h" />
+    <ClInclude Include="Resource\Parse\ImageParse.h" />
+    <ClInclude Include="Resource\Parse\JPGParse.h" />
     <ClInclude Include="Resource\ResourceError.h" />
     <ClInclude Include="Resource\Sence.h" />
     <ClInclude Include="Resource\SenceManager.h" />
+    <ClInclude Include="Resource\SenceNode.h" />
     <ClInclude Include="Resource\SenceObject.h" />
     <ClInclude Include="Resource\SenceParse.h" />
   </ItemGroup>
