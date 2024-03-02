@@ -7,7 +7,7 @@ namespace stay::Memory
 	template<typename T>
 	T* Malloc(size_t size)
 	{
-		void* rawMemory = malloc(size);
+		void* rawMemory = malloc(size * sizeof(T));
 		if (!rawMemory) {
 			throw std::bad_alloc();
 		}

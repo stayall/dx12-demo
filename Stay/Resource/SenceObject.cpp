@@ -15,7 +15,7 @@ VertexArray::VertexArray(VertexDataType type, Math::Float* srcData, size_t size)
 	m_size(size)
 {
 
-	m_data = std::shared_ptr<Math::Float[]>(Memory::Malloc<Math::Float>(m_size * sizeof(Math::Float)));
+	m_data = std::shared_ptr<Math::Float[]>(Memory::Malloc<Math::Float>(m_size));
 	memcpy(m_data.get(), srcData, size);
 }
 
@@ -33,7 +33,7 @@ IndexArray::IndexArray(uint32_t* srcData, size_t count)
 {
 	m_materialIndex = static_cast<uint32_t>(-1);
 	m_restartIndex = static_cast<uint32_t>(-1);
-	m_data = std::shared_ptr<uint32_t[]>(Memory::Malloc<uint32_t>(m_size * sizeof(uint32_t)));
+	m_data = std::shared_ptr<uint32_t[]>(Memory::Malloc<uint32_t>(m_size ));
 	memcpy(m_data.get(), srcData, m_size);
 }
 
@@ -41,7 +41,7 @@ IndexArray::IndexArray(const std::vector<uint32_t>& srcData, size_t count)
 	: BaseSenceObject(SenceObjectType::kMeshIndex),
 	m_size(count)
 {
-	m_data = std::shared_ptr<uint32_t[]>(Memory::Malloc<uint32_t>(m_size * sizeof(uint32_t)));
+	m_data = std::shared_ptr<uint32_t[]>(Memory::Malloc<uint32_t>(m_size ));
 
 	for (size_t index = 0; index < m_size; index++)
 	{
