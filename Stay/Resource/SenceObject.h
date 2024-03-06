@@ -72,8 +72,8 @@ namespace stay::Sence
 	{
 	public:
 
-		IndexArray(uint32_t* srcData, size_t count);
-		IndexArray(const std::vector<uint32_t>& srcData, size_t count);
+		IndexArray(uint32_t* srcData, size_t count, uint32_t materialIndex);
+		IndexArray(const std::vector<uint32_t>& srcData, size_t count, uint32_t materialIndex);
 		IndexArray(std::shared_ptr<uint32_t[]>& srcData, size_t count);
 
 		size_t GetIndexCount() const { return m_size; }
@@ -94,8 +94,8 @@ namespace stay::Sence
 		void AddVertexData(VertexArray::VertexDataType type, Math::Float* srcData, size_t count) { m_numSubMesh++; m_vertexDatas[type].emplace_back(type, srcData, count); }
 		void AddVertexData(VertexArray::VertexDataType type, std::shared_ptr<Math::Float[]>& srcData, size_t count) { m_numSubMesh++; m_vertexDatas[type].emplace_back(type, srcData, count); }
 
-		void AddVertexIndex(uint32_t* srcData, size_t count) { m_numSubMesh++; m_vertexIndice.emplace_back(srcData, count); }
-		void AddVertexIndex(const std::vector<uint32_t>& srcData, size_t count) { m_vertexIndice.emplace_back(srcData, count); }
+		void AddVertexIndex(uint32_t* srcData, size_t count, uint32_t materialIndex) { m_numSubMesh++; m_vertexIndice.emplace_back(srcData, count, materialIndex); }
+		void AddVertexIndex(const std::vector<uint32_t>& srcData, size_t count, uint32_t materialIndex) { m_vertexIndice.emplace_back(srcData, count, materialIndex); }
 		void AddVertexIndex(std::shared_ptr<uint32_t[]>& srcData, size_t count) { m_vertexIndice.emplace_back(srcData, count); }
 
 		size_t GetMeshCount() const { return m_numSubMesh; }
@@ -124,14 +124,36 @@ namespace stay::Sence
 		Math::Matrix m_tranformMatrix;
 	};
 
+	class MeshNode
+	{
+	public:
+		MeshNode(const std::string& name) : m_name(name) {}
+
+		void AddChild(std::shared_ptr<MeshNode>&& node) { m_nodes.emplace_back(std::move(node)); }
+		void AddChild(std::shared_ptr<Transform>&& node) { m_transform.emplace_back(std::move(node)); }
+		virtual ~MeshNode() = default;
+
+	private:
+		std::string m_name;
+
+		std::list<std::shared_ptr<MeshNode>> m_nodes;
+		std::list<std::shared_ptr<Transform>> m_transform;
+	};
+
 	class Geometry : public BaseSenceObject
 	{
 	public:
 		Geometry() : BaseSenceObject(SenceObjectType::kGeometry) {};
-		
-		void AddMesh(Mesh&& mesh) { m_meshs.push_back(std::move(mesh)); }
+		void AddMesh(std::unique_ptr<Mesh>&& mesh) { m_meshs.emplace_back(std::move(mesh)); }
+
+		//
+		std::shared_ptr<MeshNode> GetRoot() const { return m_children; }
+		void SetRoot(const std::shared_ptr<MeshNode> &root)  { m_children = root; }
 	private:
-		std::vector<Mesh> m_meshs;
+		//ASSImp Support
+		std::shared_ptr<MeshNode> m_children;
+
+		std::vector<std::unique_ptr<Mesh>> m_meshs;
 		Transform m_transform;
 
 	};

@@ -7,6 +7,7 @@
 
 namespace stay::Sence
 {
+
 	class Sence
 	{
 

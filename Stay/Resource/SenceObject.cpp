@@ -27,26 +27,26 @@ VertexArray::VertexArray(VertexArray::VertexDataType type, std::shared_ptr<Math:
 	m_data = srcData;
 }
 
-IndexArray::IndexArray(uint32_t* srcData, size_t count)
+IndexArray::IndexArray(uint32_t* srcData, size_t count, uint32_t materialIndex)
 	: BaseSenceObject(SenceObjectType::kMeshIndex),
 	m_size(count)
 {
-	m_materialIndex = static_cast<uint32_t>(-1);
+	m_materialIndex = materialIndex;
 	m_restartIndex = static_cast<uint32_t>(-1);
 	m_data = std::shared_ptr<uint32_t[]>(Memory::Malloc<uint32_t>(m_size ));
 	memcpy(m_data.get(), srcData, m_size);
 }
 
-IndexArray::IndexArray(const std::vector<uint32_t>& srcData, size_t count)
+IndexArray::IndexArray(const std::vector<uint32_t>& srcData, size_t count, uint32_t materialIndex)
 	: BaseSenceObject(SenceObjectType::kMeshIndex),
 	m_size(count)
 {
-	m_data = std::shared_ptr<uint32_t[]>(Memory::Malloc<uint32_t>(m_size ));
+	m_materialIndex = materialIndex;
 
+	m_data = std::shared_ptr<uint32_t[]>(Memory::Malloc<uint32_t>(m_size ));
 	for (size_t index = 0; index < m_size; index++)
 	{
 		m_data[index] = srcData[index];
-
 	}
 }
 

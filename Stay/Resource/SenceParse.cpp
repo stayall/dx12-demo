@@ -3,13 +3,15 @@
 #include <assimp/scene.h> 
 
 #include <Platform/Windows/WinError.h>
-
+#include <Core/Memory/MemoryManager.h>
 
 #include <direct.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 #include "SenceParse.h"
+#include "SenceObject.h"
+
 
 namespace  stay::Sence
 {
@@ -21,9 +23,9 @@ namespace  stay::Sence
 		aiProcess_SortByPType |
 		aiProcess_MakeLeftHanded;
 
-	std::shared_ptr<Sence> SenceParse::ParseSence(const char* filename)
+	std::unique_ptr<Sence>  SenceParse::ParseSence(const char* filename)
 	{
-		auto sence = std::make_shared<Sence>();
+		auto sence = std::unique_ptr<Sence>();
 
 		const aiScene* aiScene = m_importer.ReadFile(filename, kPostprocessFlag);
 		USER_ASSERT(aiScene != nullptr, m_importer.GetErrorString());
@@ -37,39 +39,66 @@ namespace  stay::Sence
 			}
 		}
 
+		auto geometry = std::make_shared<Geometry>();
+		for (size_t i = 0; i < aiScene->mNumMeshes; i++)
+		{
+			aiMesh* mesh = aiScene->mMeshes[i];
+			geometry->AddMesh(ParseMesh(mesh, aiScene));
+		}
+
+		geometry->SetRoot(ParseNode(aiScene->mRootNode, aiScene, geometry));
+		sence->m_geometries.push_back(std::move(geometry));
+		
+
 		return sence;
 	}
 
-	Mesh SenceParse::ParseMesh(aiMesh** meshs, unsigned int numMesh)
+	std::unique_ptr<Sence> SenceParse::ParseSence(const std::string& filename)
 	{
-		Mesh mesh{};
-		for (unsigned int index = 0; index < numMesh; index++)
+		return ParseSence(filename.c_str());
+	}
+
+	std::unique_ptr<Mesh> SenceParse::ParseMesh(aiMesh* mesh, const aiScene* scene)
+	{
+
+		auto parseMesh = std::make_unique<Mesh>();
+		parseMesh->AddVertexData(VertexArray::kPosition, reinterpret_cast<Math::Float*>(mesh->mVertices), mesh->mNumVertices);
+		if (mesh->mTextureCoords[0])
 		{
-			aiMesh* pMesh = meshs[index];
-
-			if (pMesh->HasPositions())
-			{
-				mesh.AddVertexData(VertexArray::kPosition, reinterpret_cast<Math::Float*>(pMesh->mVertices), pMesh->mNumVertices * sizeof(aiVector3D) / sizeof(ai_real));
-			}
-
-			if (pMesh->HasNormals())
-			{
-
-			}
-
-			std::vector<unsigned int> indices;
-			for (size_t faceIndex = 0; faceIndex < pMesh->mNumFaces; faceIndex++)
-			{
-				const auto& face = pMesh->mFaces[faceIndex];
-				for (size_t vertexIndex = 0; vertexIndex < face.mNumIndices; vertexIndex++)
-				{
-					indices.emplace_back(face.mIndices[vertexIndex]);
-				}
-			}
-			mesh.AddVertexIndex(indices, indices.size());
-
+			parseMesh->AddVertexData(VertexArray::kUV, reinterpret_cast<Math::Float*>(mesh->mTextureCoords[0]), mesh->mNumVertices);
 		}
 
-		return mesh;
+		parseMesh->AddVertexData(VertexArray::kTangent, reinterpret_cast<Math::Float*>(mesh->mTangents), mesh->mNumVertices);
+
+
+		auto indices = std::vector<Math::UINT>(mesh->mNumFaces * 3);
+		size_t numIndices = 0;
+		for (unsigned int i = 0; i < mesh->mNumFaces; i++)
+		{
+			aiFace face = mesh->mFaces[i];
+			for (unsigned int j = 0; j < face.mNumIndices; j++)
+				indices[numIndices++] = face.mIndices[j];
+		}
+		parseMesh->AddVertexIndex(indices, numIndices, mesh->mMaterialIndex);
+
+		return parseMesh;
+	}
+
+
+	std::shared_ptr<MeshNode> SenceParse::ParseNode(aiNode* node, const aiScene* aiScene, std::shared_ptr<Geometry>& geometry)
+	{
+		auto meshNode = std::make_shared<MeshNode>(node->mName.C_Str());
+		for (unsigned int i = 0; i < node->mNumMeshes; i++)
+		{
+			aiMesh* mesh = aiScene->mMeshes[node->mMeshes[i]];
+			//geometry->AddMesh(ParseMesh(mesh, aiScene));
+		}
+		// 在我们处理完所有网格（如果有的话）后，我们会递归处理每个子节点
+		for (unsigned int i = 0; i < node->mNumChildren; i++)
+		{
+			meshNode->AddChild(ParseNode(node->mChildren[i], aiScene, geometry));
+		}
+		
+		return meshNode;
 	}
 }
