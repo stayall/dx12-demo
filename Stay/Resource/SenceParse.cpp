@@ -62,13 +62,13 @@ namespace  stay::Sence
 	{
 
 		auto parseMesh = std::make_unique<Mesh>();
-		parseMesh->AddVertexData(VertexArray::kPosition, reinterpret_cast<Math::Float*>(mesh->mVertices), mesh->mNumVertices);
+		parseMesh->AddVertexData(VertexDataType::kPosition, reinterpret_cast<Math::Float*>(mesh->mVertices), mesh->mNumVertices);
 		if (mesh->mTextureCoords[0])
 		{
-			parseMesh->AddVertexData(VertexArray::kUV, reinterpret_cast<Math::Float*>(mesh->mTextureCoords[0]), mesh->mNumVertices);
+			parseMesh->AddVertexData(VertexDataType::kUV, reinterpret_cast<Math::Float*>(mesh->mTextureCoords[0]), mesh->mNumVertices);
 		}
 
-		parseMesh->AddVertexData(VertexArray::kTangent, reinterpret_cast<Math::Float*>(mesh->mTangents), mesh->mNumVertices);
+		parseMesh->AddVertexData(VertexDataType::kTangent, reinterpret_cast<Math::Float*>(mesh->mTangents), mesh->mNumVertices);
 
 
 		auto indices = std::vector<Math::UINT>(mesh->mNumFaces * 3);

@@ -6,6 +6,8 @@
 #include <crossguid/guid.hpp>
 
 #include <Core/Math/MathType.h>
+#include "Platform/Windows/RHI/VertexData.h"
+
 
 #include "Image.h"
 
@@ -44,15 +46,7 @@ namespace stay::Sence
 	class VertexArray : public BaseSenceObject
 	{
 	public:
-		enum VertexDataType
-		{
-			kPosition,
-			kNormal,
-			kTangent,
-			kColor,
-			kUV,
-			kNumVertexDataType
-		};
+		
 
 		VertexArray(VertexDataType type, Math::Float* srcData, size_t count);
 		VertexArray(VertexDataType type, std::shared_ptr<Math::Float[]>& srcData, size_t count);
@@ -91,8 +85,8 @@ namespace stay::Sence
 	public:
 		Mesh();
 
-		void AddVertexData(VertexArray::VertexDataType type, Math::Float* srcData, size_t count) { m_numSubMesh++; m_vertexDatas[type].emplace_back(type, srcData, count); }
-		void AddVertexData(VertexArray::VertexDataType type, std::shared_ptr<Math::Float[]>& srcData, size_t count) { m_numSubMesh++; m_vertexDatas[type].emplace_back(type, srcData, count); }
+		void AddVertexData(VertexDataType type, Math::Float* srcData, size_t count) { m_numSubMesh++; m_vertexDatas[type].emplace_back(type, srcData, count); }
+		void AddVertexData(VertexDataType type, std::shared_ptr<Math::Float[]>& srcData, size_t count) { m_numSubMesh++; m_vertexDatas[type].emplace_back(type, srcData, count); }
 
 		void AddVertexIndex(uint32_t* srcData, size_t count, uint32_t materialIndex) { m_numSubMesh++; m_vertexIndice.emplace_back(srcData, count, materialIndex); }
 		void AddVertexIndex(const std::vector<uint32_t>& srcData, size_t count, uint32_t materialIndex) { m_vertexIndice.emplace_back(srcData, count, materialIndex); }
@@ -100,14 +94,14 @@ namespace stay::Sence
 
 		size_t GetMeshCount() const { return m_numSubMesh; }
 
-		float* GetVertexData(size_t index, VertexArray::VertexDataType type = VertexArray::VertexDataType::kPosition) const;
+		float* GetVertexData(size_t index, VertexDataType type = VertexDataType::kPosition) const;
 		size_t GetVertexCount(size_t index) const;
 
 		uint32_t* GetIndexData(size_t index) const;
 		size_t GetIndexCount(size_t index) const;
 	private:
 		size_t m_numSubMesh = 0;
-		std::vector<VertexArray> m_vertexDatas[VertexArray::VertexDataType::kNumVertexDataType];
+		std::vector<VertexArray> m_vertexDatas[VertexDataType::kNumVertexDataType];
 		std::vector<IndexArray> m_vertexIndice;
 	};
 

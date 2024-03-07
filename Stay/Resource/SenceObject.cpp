@@ -19,7 +19,7 @@ VertexArray::VertexArray(VertexDataType type, Math::Float* srcData, size_t size)
 	memcpy(m_data.get(), srcData, size);
 }
 
-VertexArray::VertexArray(VertexArray::VertexDataType type, std::shared_ptr<Math::Float[]>& srcData, size_t size)
+VertexArray::VertexArray(VertexDataType type, std::shared_ptr<Math::Float[]>& srcData, size_t size)
 	: BaseSenceObject(SenceObjectType(SenceObjectType::kMeshVertex)),
 	m_type(type),
 	m_size(size)
@@ -64,7 +64,7 @@ Mesh::Mesh()
 {
 
 }
-float* Mesh::GetVertexData(size_t index, VertexArray::VertexDataType type) const
+float* Mesh::GetVertexData(size_t index, VertexDataType type) const
 {
 	ASSERT(index < m_numSubMesh);
 
@@ -73,7 +73,7 @@ float* Mesh::GetVertexData(size_t index, VertexArray::VertexDataType type) const
 size_t Mesh::GetVertexCount(size_t index) const
 {
 	ASSERT(index < m_numSubMesh);
-	return m_vertexDatas[VertexArray::kPosition][index].GetVertexCount();
+	return m_vertexDatas[VertexDataType::kPosition][index].GetVertexCount();
 }
 uint32_t* Mesh::GetIndexData(size_t index) const
 {
