@@ -1,13 +1,21 @@
 #include "Display.h"
 #include "../WinError.h"
 #include "GraphicsCore.h"
+#include "DescriptorHeap.h"
+#include "CommandQueueManager.h"
+#include "CommandListManager.h"
 
 
 
 namespace stay::Display
 {
+
 	IDXGISwapChain3* g_SwapChain;
-	
+	DescriptorHeap g_rtvDescriptorHeap{};
+	ID3D12Resource* g_renderTarget[sc_RenderTagetCount];
+	 
+	UINT g_freamIndex = 0;
+
 	void Initialize()
 	{
 		using Microsoft::WRL::ComPtr;
@@ -38,6 +46,40 @@ namespace stay::Display
 
 		THROW_IF_FAILED(swapChian.As(&swapChian3));
 		g_SwapChain = swapChian3.Detach();
+
+
+		g_rtvDescriptorHeap.Create(Graphics::g_Device, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 2, D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
+
+		
+
+			for (UINT i = 0; i < sc_RenderTagetCount; i++)
+			{
+				THROW_IF_FAILED(Display::g_SwapChain->GetBuffer(i, IID_PPV_ARGS(g_renderTarget + i)));
+				Graphics::g_Device->CreateRenderTargetView(g_renderTarget[i], nullptr, g_rtvDescriptorHeap.Allcoate(1));
+			}
+
+			//g_freamIndex = g_SwapChain->GetCurrentBackBufferIndex();
+	}
+
+	D3D12_CPU_DESCRIPTOR_HANDLE GetRTVDescriptorHandle()
+	{
+		return g_rtvDescriptorHeap.RetrieveAddress(Display::g_freamIndex);
+	}
+
+	ID3D12Resource* GetCurrentRenderTarget()
+	{
+		return g_renderTarget[g_freamIndex];
+	}
+
+
+
+
+	void Swap()
+	{
+		g_freamIndex = g_SwapChain->GetCurrentBackBufferIndex();
+
+		THROW_IF_FAILED(Display::g_SwapChain->Present(0, DXGI_PRESENT_ALLOW_TEARING));
+
 	}
 
 	void ShutDown()
