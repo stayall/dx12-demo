@@ -192,15 +192,16 @@
     <ClCompile Include="Platform\Windows\Exception.cpp" />
     <ClCompile Include="Platform\Windows\RHI\GPUResoures.cpp" />
     <ClCompile Include="Platform\Windows\RHI\GraphicsCore.cpp" />
+    <ClCompile Include="Platform\Windows\RHI\Main.cpp" />
     <ClCompile Include="Platform\Windows\RHI\PipelineState.cpp" />
     <ClCompile Include="Platform\Windows\RHI\RootSignature.cpp" />
     <ClCompile Include="Platform\Windows\RHI\Window.cpp" />
     <ClCompile Include="Platform\Windows\WinHelper.cpp" />
     <ClCompile Include="Platform\Windows\WinError.cpp" />
     <ClCompile Include="Resource\Image.cpp" />
+    <ClCompile Include="Resource\SenceManager.cpp" />
     <ClCompile Include="Resource\SenceObject.cpp" />
     <ClCompile Include="Resource\SenceParse.cpp" />
-    <ClCompile Include="Resource\Test\SenceNodeTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Core\File\Path.h" />
@@ -225,10 +226,12 @@
     <ClInclude Include="Platform\Windows\RHI\PipelineState.h" />
     <ClInclude Include="Platform\Windows\RHI\Resource\resource1.h" />
     <ClInclude Include="Platform\Windows\RHI\RootSignature.h" />
+    <ClInclude Include="Platform\Windows\RHI\VertexData.h" />
     <ClInclude Include="Platform\Windows\RHI\Window.h" />
     <ClInclude Include="Platform\Windows\WinHelper.h" />
     <ClInclude Include="Platform\Windows\WinStd.h" />
     <ClInclude Include="Platform\Windows\WinError.h" />
+    <ClInclude Include="Resource\AssetDef.h" />
     <ClInclude Include="Resource\Image.h" />
     <ClInclude Include="Resource\Parse\ImageParse.h" />
     <ClInclude Include="Resource\Parse\JPGParse.h" />

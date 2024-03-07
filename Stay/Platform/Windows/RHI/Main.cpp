@@ -18,10 +18,9 @@
 #include "DescriptorHeap.h"
 
 #include "GPUResoures.h"
+#include "VertexData.h"
 
 namespace dx = DirectX;
-
-
 
 
 Align(256) struct MatrixConstantBuffer
@@ -29,11 +28,7 @@ Align(256) struct MatrixConstantBuffer
 	float offset;
 };
 
-struct VertexData
-{
-	dx::XMFLOAT3 position;
-	dx::XMFLOAT4 color;
-};
+
 
 
 
@@ -51,18 +46,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		stay::Graphics::Initialize();
 		Display::Initialize();
 
-		stay::DescriptorHeap rtvDescriptorHeap{};
-		rtvDescriptorHeap.Create(Graphics::g_Device, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 2, D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
-
-		ComPtr<ID3D12Resource> renderTarget[2];
-		{
-
-			for (UINT i = 0; i < 2; i++)
-			{
-				THROW_IF_FAILED(Display::g_SwapChain->GetBuffer(i, IID_PPV_ARGS(&renderTarget[i])));
-				Graphics::g_Device->CreateRenderTargetView(renderTarget[i].Get(), nullptr, rtvDescriptorHeap.Allcoate(1));
-			}
-		}
+	
 
 
 		ComPtr<ID3D12CommandAllocator> pCommandAlloc;
@@ -234,31 +218,32 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 				commandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 				commandList->SetGraphicsRootDescriptorTable(0, cbvDescriptorHeap.RetrieveAddress(0));
 
+				GraphicsCommandList* commandList = GraphicsCommandList::Begin(L"SetRenderTaget");
+				commandList->ResourceBarrier(Display::GetCurrentRenderTarget(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 
-				commandList->ResourceBarrier(renderTarget[freamIndex].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 
-
-				auto handle = (D3D12_CPU_DESCRIPTOR_HANDLE)rtvDescriptorHeap.RetrieveAddress(freamIndex);
+				auto handle = Display::GetRTVDescriptorHandle();
 				commandList->SetRenderTargets(1, &handle, nullptr);
 
 				FLOAT clearColor[] = { 0.0f, 0.2f, 0.4f, 1.0f };
-				commandList->ClearRenderTargetView(rtvDescriptorHeap.RetrieveAddress(freamIndex), clearColor);
+				commandList->ClearRenderTargetView(handle, clearColor);
 
+				commandList->ResourceBarrier(Display::GetCurrentRenderTarget(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+				
 				commandList->ExecuteBundle(pBundleCommandList.Get());
 				commandList->GetCommandList()->DrawInstanced(3, 1, 0, 0);
-
-
-				commandList->ResourceBarrier(renderTarget[freamIndex].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
-
 				commandList->Flush(true);
+
+				Display::Swap();
 			}
 
 
 			THROW_IF_FAILED(Display::g_SwapChain->Present(0, DXGI_PRESENT_ALLOW_TEARING));
 
-			freamIndex = Display::g_SwapChain->GetCurrentBackBufferIndex();
+			
 		}
-
+		Display::ShutDown();
+		stay::Graphics::Finalize();
 
 	}
 	catch (const stay::Exception& e)
