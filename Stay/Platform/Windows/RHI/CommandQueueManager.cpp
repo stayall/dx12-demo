@@ -21,7 +21,7 @@ namespace stay
 
 	CommandQueue::~CommandQueue()
 	{
-		ShutDown();
+		//ShutDown();
 	}
 
 	bool CommandQueue::IsComplete(UINT64 fenceValue)
@@ -88,6 +88,10 @@ namespace stay
 		{
 			THROW_LASTEXCEPTION();
 		}
+
+		m_allocatorPool.Destoty();
+
+		SAFE_RELEASE(m_fence);
 		SAFE_RELEASE(m_commandQueue);
 	}
 
@@ -177,6 +181,7 @@ namespace stay
 	void CommandQueueManager::Finalize()
 	{
 		m_graphicsQueue.ShutDown();
+		m_computeQueue.ShutDown();
 	}
 
 }

@@ -50,7 +50,7 @@ namespace stay
 	{
 	public:
 		CommandQueueManager() = default;
-		~CommandQueueManager() = default;
+		~CommandQueueManager() {};
 
 		void Initialize(ID3D12Device* device);
 

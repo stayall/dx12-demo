@@ -84,6 +84,11 @@ namespace stay::Graphics
 		g_CommandManager.Initialize(g_Device);
 }
 
+	void UpdateGraphics()
+	{
+
+	}
+
 	void Finalize()
 	{
 		g_CommandManager.Finalize();
@@ -92,6 +97,16 @@ namespace stay::Graphics
 		{
 			delete g_App;
 		}
+
+#ifdef _DEBUG
+		IDXGIDebug1* pDebug = nullptr;
+		if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&pDebug))))
+		{
+			const GUID  DXGI_DEBUG_ALL = { 0xe48ae283, 0xda80, 0x490b, 0x87, 0xe6, 0x43, 0xe9, 0xa9, 0xcf, 0xda, 0x8 };
+			pDebug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_SUMMARY);
+			pDebug->Release();
+		}
+#endif
 
 	}
 
